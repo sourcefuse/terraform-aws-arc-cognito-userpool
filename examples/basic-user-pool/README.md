@@ -208,9 +208,9 @@ This example provides the following outputs:
 Once you have the basic user pool working, you might want to explore:
 
 1. **[Hosted UI Example](../hosted-ui-app-client/)** - Add a hosted authentication UI
-2. **[Federated Identity Provider Example](../federated-identity-provider/)** - Integrate with Google/Facebook
+2. **[Federated Identity Provider Example](../federated-identity-provider/)** - Add external Identity providers for login
 3. **[Lambda Triggers Example](../lambda-triggers/)** - Add custom authentication logic
-4. **[IAM Role Mappings Example](../iam-role-mappings/)** - Fine-grained access control
+4. **[Advanced Security Example](../advanced-security/)** - Add advanced security controls
 
 ## Cleanup
 

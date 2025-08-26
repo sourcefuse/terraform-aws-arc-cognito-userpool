@@ -349,9 +349,9 @@ user_pool_domain = {
 
 Once you have the hosted UI working, you might want to explore:
 
-1. **[Federated Identity Provider Example](../federated-identity-provider/)** - Add Google/Facebook login
+1. **[Federated Identity Provider Example](../federated-identity-provider/)** - Add external Identity providers for login
 2. **[Lambda Triggers Example](../lambda-triggers/)** - Add custom authentication logic
-3. **[IAM Role Mappings Example](../iam-role-mappings/)** - Fine-grained access control
+3. **[Advanced Security](../advanced-security/)** - Add advanced security controls
 
 ## Cleanup
 

@@ -94,6 +94,6 @@ aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/arc-dev"
 ## Next Steps
 
 Once you have Lambda triggers working, explore:
-1. **[IAM Role Mappings Example](../iam-role-mappings/)** - Fine-grained access control
-2. Customize the Lambda functions for your specific use cases
-3. Add monitoring and alerting for trigger failures
+1. **[Federated Identity Provider Example](../federated-identity-provider/)** - Add external Identity providers for login
+2. **[Hosted UI Example](../hosted-ui-app-client/)** - Add a hosted authentication UI
+3. **[Advanced Security](../advanced-security/)** - Add advanced security controls

@@ -153,6 +153,7 @@ aws logs describe-log-groups --log-group-name-prefix "/aws/cognito"
 
 - **[basic-user-pool](../basic-user-pool/)** - Simple setup without advanced features
 - **[hosted-ui-app-client](../hosted-ui-app-client/)** - Web application integration
-- **[federated-identity-provider](../federated-identity-provider/)** - Social login integration
+- **[federated-identity-provider](../federated-identity-provider/)** - Add external Identity providers for login
+- **[Lambda Triggers Example](../lambda-triggers/)** - Add custom authentication logic
 
 This example provides enterprise-grade security features for applications requiring the highest level of protection.

@@ -443,9 +443,9 @@ saml_attribute_mapping = {
 
 Once you have federated authentication working, you might want to explore:
 
-1. **[Lambda Triggers Example](../lambda-triggers/)** - Add custom logic for federated users
-2. **[IAM Role Mappings Example](../iam-role-mappings/)** - Map federated users to AWS IAM roles
-3. **Custom Domains** - Use your own domain for the hosted UI
+1. **[Lambda Triggers Example](../lambda-triggers/)** - Add custom authentication logic
+2. **[Advanced Security](../advanced-security/)** - Add advanced security controls
+3. **[Hosted UI Example](../hosted-ui-app-client/)** - Add a hosted authentication UI
 
 ## Cleanup
 
