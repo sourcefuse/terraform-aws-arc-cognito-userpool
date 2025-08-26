@@ -260,7 +260,7 @@ variable "advanced_security_mode" {
 variable "mfa_configuration" {
   description = "Multi-Factor Authentication (MFA) configuration"
   type        = string
-  default     = "OPTIONAL"
+  default     = "OFF"
 
   validation {
     condition     = contains(["OFF", "ON", "OPTIONAL"], var.mfa_configuration)

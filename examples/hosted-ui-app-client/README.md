@@ -51,7 +51,7 @@ This example demonstrates how to create a Cognito User Pool with a hosted authen
 2. **Edit the variables** in `terraform.tfvars`:
    ```hcl
    aws_region   = "us-east-1"
-   project_name = "my-app"
+   project_name = "arc"
    environment  = "dev"
 
    # Update callback URLs for your application
@@ -143,7 +143,7 @@ After deployment, you can test the hosted UI:
 
 2. **Visit the login URL** (also provided in outputs):
    ```
-   https://my-app-dev-auth.auth.us-east-1.amazoncognito.com/login?client_id=<CLIENT_ID>&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:3000/callback
+   https://arc-dev-auth.auth.us-east-1.amazoncognito.com/login?client_id=<CLIENT_ID>&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:3000/callback
    ```
 
 3. **Test the authentication flow**:

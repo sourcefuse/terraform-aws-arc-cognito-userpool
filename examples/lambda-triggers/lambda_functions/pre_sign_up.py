@@ -75,7 +75,7 @@ def lambda_handler(event, context):
             raise Exception("Invalid email format")
 
         # 3. Check for blocked domains
-        blocked_domains = ['tempmail.com', 'guerrillamail.com', '10minutemail.com']
+        blocked_domains = ['tempmail.com', 'guerrillamail.com', '10minutemail.com', 'gmail.com']
         if email:
             domain = email.split('@')[1] if '@' in email else ''
             if domain in blocked_domains:

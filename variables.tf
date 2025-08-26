@@ -81,17 +81,6 @@ variable "auto_verified_attributes" {
 # OPTIONAL VARIABLES - SECURITY CONFIGURATION
 # ==============================================================================
 
-variable "mfa_configuration" {
-  description = "Multi-Factor Authentication (MFA) configuration for the User Pool"
-  type        = string
-  default     = "OFF"
-
-  validation {
-    condition     = contains(["OFF", "ON", "OPTIONAL"], var.mfa_configuration)
-    error_message = "MFA configuration must be one of: OFF, ON, OPTIONAL."
-  }
-}
-
 variable "password_policy" {
   description = "Configuration for the user pool password policy"
   type = object({
@@ -288,13 +277,34 @@ variable "sms_verification_message" {
 # OPTIONAL VARIABLES - SOFTWARE TOKEN MFA
 # ==============================================================================
 
+variable "mfa_configuration" {
+  description = "Multi-Factor Authentication (MFA) configuration for the User Pool. Set to null to omit."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.mfa_configuration == null || contains(["OFF", "ON", "OPTIONAL"], var.mfa_configuration)
+    error_message = "MFA configuration must be one of: OFF, ON, OPTIONAL."
+  }
+}
+
 variable "software_token_mfa_configuration" {
-  description = "Configuration for software token Multi-Factor Authentication (MFA) settings"
+  description = "Configuration for software token Multi-Factor Authentication (MFA) settings. Set to null to omit."
   type = object({
     enabled = bool
   })
   default = null
+
+  validation {
+    condition = (
+      var.software_token_mfa_configuration == null ||
+      !(var.mfa_configuration == "OFF" && var.software_token_mfa_configuration.enabled)
+    )
+    error_message = "software_token_mfa_configuration.enabled cannot be true when mfa_configuration is OFF."
+  }
 }
+
+
 
 # ==============================================================================
 # OPTIONAL VARIABLES - USERNAME CONFIGURATION

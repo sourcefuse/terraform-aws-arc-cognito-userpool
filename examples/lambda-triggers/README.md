@@ -81,7 +81,7 @@ aws cognito-idp sign-up \
   --user-attributes Name=email,Value=test@example.com
 
 # Check CloudWatch logs
-aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/my-app-dev"
+aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/arc-dev"
 ```
 
 ## Requirements

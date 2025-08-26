@@ -76,9 +76,9 @@ module "cognito_user_pool" {
   ]
 
   # ADVANCED SECURITY FEATURES (Requires ADVANCED pricing tier)
-  advanced_security_mode = var.advanced_security_mode
-  mfa_configuration      = var.mfa_configuration
-
+  advanced_security_mode           = var.advanced_security_mode
+  mfa_configuration                = var.mfa_configuration
+  software_token_mfa_configuration = var.software_token_mfa_configuration
   # Device configuration for remember device
   device_configuration = {
     challenge_required_on_new_device      = true

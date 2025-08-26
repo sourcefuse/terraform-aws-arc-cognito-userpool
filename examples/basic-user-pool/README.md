@@ -43,7 +43,7 @@ This example demonstrates how to create a basic AWS Cognito User Pool with essen
 2. **Edit the variables** in `terraform.tfvars`:
    ```hcl
    aws_region   = "us-east-1"
-   project_name = "my-app"
+   project_name = "arc"
    environment  = "dev"
 
    # Customize password policy

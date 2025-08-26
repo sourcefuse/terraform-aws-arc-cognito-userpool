@@ -8,11 +8,6 @@ module "tags" {
 
   environment = var.environment
   project     = var.project_name
-
-  extra_tags = {
-    Example = "hosted-ui-app-client"
-    Repo    = "github.com/your-org/terraform-aws-cognito-user-pool"
-  }
 }
 
 module "cognito_user_pool" {

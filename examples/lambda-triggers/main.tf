@@ -19,85 +19,67 @@ module "tags" {
 # LAMBDA FUNCTIONS FOR COGNITO TRIGGERS
 # ==============================================================================
 
-# Pre Sign-up Lambda Function
-resource "aws_lambda_function" "pre_sign_up" {
+# Pre Sign-up Lambda
+module "pre_sign_up_lambda" {
+  source  = "sourcefuse/arc-lambda-function/aws"
+  version = "0.0.1"
+
   count = var.enable_pre_sign_up_trigger ? 1 : 0
 
-  filename      = "${path.module}/lambda/pre_sign_up.zip"
   function_name = "${var.namespace}-${var.environment}-pre-sign-up"
-  role          = aws_iam_role.lambda_execution_role[0].arn
+  description   = "Lambda for Cognito Pre Sign-up trigger"
   handler       = "index.handler"
   runtime       = "python3.9"
+  filename      = "${path.module}/lambda/pre_sign_up.zip"
   timeout       = 30
 
   tags = module.tags.tags
 }
 
-# Post Confirmation Lambda Function
-resource "aws_lambda_function" "post_confirmation" {
+# Post Confirmation Lambda
+module "post_confirmation_lambda" {
+  source  = "sourcefuse/arc-lambda-function/aws"
+  version = "0.0.1"
+
   count = var.enable_post_confirmation_trigger ? 1 : 0
 
-  filename      = "${path.module}/lambda/post_confirmation.zip"
   function_name = "${var.namespace}-${var.environment}-post-confirmation"
-  role          = aws_iam_role.lambda_execution_role[0].arn
+  description   = "Lambda for Cognito Post Confirmation trigger"
   handler       = "index.handler"
   runtime       = "python3.9"
+  filename      = "${path.module}/lambda/post_confirmation.zip"
   timeout       = 30
 
   tags = module.tags.tags
 }
 
-# Pre Authentication Lambda Function
-resource "aws_lambda_function" "pre_authentication" {
+# Pre Authentication Lambda
+module "pre_authentication_lambda" {
+  source  = "sourcefuse/arc-lambda-function/aws"
+  version = "0.0.1"
+
   count = var.enable_pre_authentication_trigger ? 1 : 0
 
-  filename      = "${path.module}/lambda/pre_authentication.zip"
   function_name = "${var.namespace}-${var.environment}-pre-authentication"
-  role          = aws_iam_role.lambda_execution_role[0].arn
+  description   = "Lambda for Cognito Pre Authentication trigger"
   handler       = "index.handler"
   runtime       = "python3.9"
+  filename      = "${path.module}/lambda/pre_authentication.zip"
   timeout       = 30
 
   tags = module.tags.tags
 }
 
-# Lambda Execution Role
-resource "aws_iam_role" "lambda_execution_role" {
-  count = local.create_lambda_functions ? 1 : 0
+# ==============================================================================
+# LAMBDA PERMISSIONS FOR COGNITO (FIXED TO USE MODULE OUTPUTS)
+# ==============================================================================
 
-  name = "${var.namespace}-${var.environment}-cognito-lambda-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = module.tags.tags
-}
-
-# Lambda Execution Policy
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  count = local.create_lambda_functions ? 1 : 0
-
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  role       = aws_iam_role.lambda_execution_role[0].name
-}
-
-# Lambda Permissions for Cognito
 resource "aws_lambda_permission" "cognito_pre_sign_up" {
   count = var.enable_pre_sign_up_trigger ? 1 : 0
 
-  statement_id  = "AllowCognitoInvoke"
+  statement_id  = "AllowCognitoInvokePreSignUp"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.pre_sign_up[0].function_name
+  function_name = module.pre_sign_up_lambda[0].name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = module.cognito_user_pool.user_pool_arn
 }
@@ -105,9 +87,9 @@ resource "aws_lambda_permission" "cognito_pre_sign_up" {
 resource "aws_lambda_permission" "cognito_post_confirmation" {
   count = var.enable_post_confirmation_trigger ? 1 : 0
 
-  statement_id  = "AllowCognitoInvoke"
+  statement_id  = "AllowCognitoInvokePostConfirmation"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.post_confirmation[0].function_name
+  function_name = module.post_confirmation_lambda[0].name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = module.cognito_user_pool.user_pool_arn
 }
@@ -115,9 +97,9 @@ resource "aws_lambda_permission" "cognito_post_confirmation" {
 resource "aws_lambda_permission" "cognito_pre_authentication" {
   count = var.enable_pre_authentication_trigger ? 1 : 0
 
-  statement_id  = "AllowCognitoInvoke"
+  statement_id  = "AllowCognitoInvokePreAuthentication"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.pre_authentication[0].function_name
+  function_name = module.pre_authentication_lambda[0].name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = module.cognito_user_pool.user_pool_arn
 }
@@ -129,14 +111,11 @@ resource "aws_lambda_permission" "cognito_pre_authentication" {
 module "cognito_user_pool" {
   source = "../../"
 
-  # Basic configuration
   name = "${var.namespace}-${var.environment}-lambda-pool"
 
-  # Authentication settings
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
 
-  # Password policy
   password_policy = {
     minimum_length                   = 8
     require_lowercase                = true
@@ -146,7 +125,6 @@ module "cognito_user_pool" {
     temporary_password_validity_days = 7
   }
 
-  # Account recovery
   account_recovery_mechanisms = [
     {
       name     = "verified_email"
@@ -154,23 +132,20 @@ module "cognito_user_pool" {
     }
   ]
 
-  # Email configuration
   email_configuration = {
     email_sending_account = "COGNITO_DEFAULT"
   }
 
-  # Verification messages
   email_verification_subject = "Verify your email for ${var.project_name}"
   email_verification_message = "Please click the link below to verify your email address: {####}"
 
-  # Lambda triggers configuration
+  # Correctly wire Lambda triggers
   lambda_config = {
-    pre_sign_up        = var.enable_pre_sign_up_trigger ? aws_lambda_function.pre_sign_up[0].arn : null
-    post_confirmation  = var.enable_post_confirmation_trigger ? aws_lambda_function.post_confirmation[0].arn : null
-    pre_authentication = var.enable_pre_authentication_trigger ? aws_lambda_function.pre_authentication[0].arn : null
+    pre_sign_up        = var.enable_pre_sign_up_trigger ? module.pre_sign_up_lambda[0].arn : null
+    post_confirmation  = var.enable_post_confirmation_trigger ? module.post_confirmation_lambda[0].arn : null
+    pre_authentication = var.enable_pre_authentication_trigger ? module.pre_authentication_lambda[0].arn : null
   }
 
-  # User pool clients
   user_pool_clients = [
     {
       name            = "${var.namespace}-${var.environment}-lambda-client"
@@ -194,15 +169,12 @@ module "cognito_user_pool" {
     }
   ]
 
-  # Security settings
   advanced_security_mode = "OFF"
   mfa_configuration      = "OFF"
 
-  # Username configuration
   username_configuration = {
     case_sensitive = false
   }
 
-  # Tags
   tags = module.tags.tags
 }

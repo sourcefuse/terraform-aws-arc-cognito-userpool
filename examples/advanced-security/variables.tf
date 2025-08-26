@@ -44,10 +44,19 @@ variable "advanced_security_mode" {
 variable "mfa_configuration" {
   description = "Multi-Factor Authentication (MFA) configuration"
   type        = string
-  default     = "OPTIONAL"
+  default     = "ON"
 
   validation {
     condition     = contains(["OFF", "ON", "OPTIONAL"], var.mfa_configuration)
     error_message = "MFA configuration must be one of: OFF, ON, OPTIONAL."
+  }
+}
+variable "software_token_mfa_configuration" {
+  description = "Configuration for software token Multi-Factor Authentication (MFA) settings"
+  type = object({
+    enabled = bool
+  })
+  default = {
+    enabled = true
   }
 }

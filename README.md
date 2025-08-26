@@ -73,7 +73,7 @@ module "cognito_user_pool" {
 
   tags = {
     Environment = "production"
-    Project     = "my-app"
+    Project     = "arc"
   }
 }
 ```
@@ -160,7 +160,7 @@ module "cognito_user_pool" {
 
   tags = {
     Environment = "production"
-    Project     = "my-app"
+    Project     = "arc"
   }
 }
 ```
@@ -276,7 +276,7 @@ module "cognito_user_pool" {
 
   tags = {
     Environment = "production"
-    Project     = "my-app"
+    Project     = "arc"
     ManagedBy   = "terraform"
   }
 }

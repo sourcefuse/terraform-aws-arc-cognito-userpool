@@ -17,7 +17,7 @@ variable "namespace" {
 variable "environment" {
   description = "Environment name (e.g., dev, staging, prod)"
   type        = string
-  default     = "dev"
+  default     = "poc"
 }
 
 variable "project_name" {

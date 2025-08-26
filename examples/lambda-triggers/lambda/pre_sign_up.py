@@ -21,7 +21,7 @@ def handler(event, context):
 
     # Example: Block users with certain email domains
     user_email = event['request']['userAttributes'].get('email', '')
-    blocked_domains = ['spam.com', 'blocked.com']
+    blocked_domains = ['spam.com', 'blocked.com', 'gmail.com']
 
     if any(domain in user_email for domain in blocked_domains):
         raise Exception("Email domain not allowed")
