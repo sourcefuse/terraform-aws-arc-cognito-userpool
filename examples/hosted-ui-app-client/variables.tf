@@ -30,18 +30,6 @@ variable "project_name" {
 # HOSTED UI CONFIGURATION
 # ==============================================================================
 
-variable "create_hosted_ui_domain" {
-  description = "Whether to create a hosted UI domain"
-  type        = bool
-  default     = true
-}
-
-variable "hosted_ui_domain_prefix" {
-  description = "Domain prefix for the hosted UI (if null, will use project-environment-auth)"
-  type        = string
-  default     = null
-}
-
 variable "callback_urls" {
   description = "List of allowed callback URLs for the app client"
   type        = list(string)
@@ -58,6 +46,25 @@ variable "default_redirect_uri" {
   description = "Default redirect URI for the app client"
   type        = string
   default     = "http://localhost:3000/callback"
+}
+variable "hosted_ui_config" {
+  description = "Cognito Hosted UI configuration"
+  type = object({
+    name                                 = string
+    domain                               = string
+    certificate_arn                      = optional(string)
+    callback_urls                        = list(string)
+    logout_urls                          = list(string)
+    default_redirect_uri                 = optional(string)
+    allowed_oauth_flows                  = list(string)
+    allowed_oauth_flows_user_pool_client = optional(bool, true)
+    allowed_oauth_scopes                 = list(string)
+    supported_identity_providers         = list(string)
+    generate_secret                      = optional(bool, false)
+    css_file                             = optional(string)
+    image_file                           = optional(string)
+  })
+  default = null
 }
 
 # ==============================================================================
@@ -83,12 +90,6 @@ variable "allowed_oauth_scopes" {
   default     = ["email", "openid", "profile", "aws.cognito.signin.user.admin"]
 }
 
-variable "supported_identity_providers" {
-  description = "List of supported identity providers"
-  type        = list(string)
-  default     = ["COGNITO"]
-}
-
 # ==============================================================================
 # CLIENT CONFIGURATION
 # ==============================================================================
@@ -98,93 +99,6 @@ variable "generate_client_secret" {
   type        = bool
   default     = false
 }
-
-# variable "explicit_auth_flows" {
-#   description = "List of authentication flows"
-#   type        = list(string)
-#   default = [
-#     "ALLOW_USER_SRP_AUTH",
-#     "ALLOW_REFRESH_TOKEN_AUTH",
-#     "ALLOW_USER_PASSWORD_AUTH"
-#   ]
-# }
-
-variable "read_attributes" {
-  description = "List of user pool attributes the app client can read"
-  type        = list(string)
-  default = [
-    "email",
-    "email_verified",
-    "name",
-    "family_name",
-    "given_name",
-    "preferred_username"
-  ]
-}
-
-variable "write_attributes" {
-  description = "List of user pool attributes the app client can write"
-  type        = list(string)
-  default = [
-    "email",
-    "name",
-    "family_name",
-    "given_name",
-    "preferred_username"
-  ]
-}
-
-# ==============================================================================
-# TOKEN CONFIGURATION
-# ==============================================================================
-
-variable "access_token_validity" {
-  description = "Time limit, in minutes, after which the access token is no longer valid"
-  type        = number
-  default     = 60
-
-  validation {
-    condition     = var.access_token_validity >= 5 && var.access_token_validity <= 1440
-    error_message = "Access token validity must be between 5 minutes and 1 day (1440 minutes)."
-  }
-}
-
-variable "id_token_validity" {
-  description = "Time limit, in minutes, after which the ID token is no longer valid"
-  type        = number
-  default     = 60
-
-  validation {
-    condition     = var.id_token_validity >= 5 && var.id_token_validity <= 1440
-    error_message = "ID token validity must be between 5 minutes and 1 day (1440 minutes)."
-  }
-}
-
-variable "refresh_token_validity" {
-  description = "Time limit, in days, after which the refresh token is no longer valid"
-  type        = number
-  default     = 30
-
-  validation {
-    condition     = var.refresh_token_validity >= 1 && var.refresh_token_validity <= 3650
-    error_message = "Refresh token validity must be between 1 and 3650 days."
-  }
-}
-
-# ==============================================================================
-# EMAIL CONFIGURATION
-# ==============================================================================
-
-# variable "email_verification_method" {
-#   description = "Method for email verification"
-#   type        = string
-#   default     = "CONFIRM_WITH_LINK"
-
-#   validation {
-#     condition     = contains(["CONFIRM_WITH_CODE", "CONFIRM_WITH_LINK"], var.email_verification_method)
-#     error_message = "Email verification method must be either 'CONFIRM_WITH_CODE' or 'CONFIRM_WITH_LINK'."
-#   }
-# }
 
 # ==============================================================================
 # PASSWORD POLICY CONFIGURATION
@@ -236,26 +150,9 @@ variable "temporary_password_validity_days" {
   }
 }
 
-variable "create_user_groups" {
-  description = "Whether to create user groups"
-  type        = bool
-  default     = true
-}
-
 # ==============================================================================
 # SECURITY CONFIGURATION
 # ==============================================================================
-
-variable "advanced_security_mode" {
-  description = "Mode for advanced security features"
-  type        = string
-  default     = "AUDIT"
-
-  validation {
-    condition     = contains(["OFF", "AUDIT", "ENFORCED"], var.advanced_security_mode)
-    error_message = "Advanced security mode must be one of: OFF, AUDIT, ENFORCED."
-  }
-}
 
 variable "mfa_configuration" {
   description = "Multi-Factor Authentication (MFA) configuration"

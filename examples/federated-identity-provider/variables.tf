@@ -171,40 +171,6 @@ variable "enable_google_provider" {
   default     = false
 }
 
-variable "google_client_id" {
-  description = "Google OAuth 2.0 client ID"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "google_client_secret" {
-  description = "Google OAuth 2.0 client secret"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "google_scopes" {
-  description = "List of Google OAuth scopes to request"
-  type        = list(string)
-  default     = ["profile", "email", "openid"]
-}
-
-variable "google_attribute_mapping" {
-  description = "Mapping of Google attributes to Cognito attributes"
-  type        = map(string)
-  default = {
-    email              = "email"
-    family_name        = "family_name"
-    given_name         = "given_name"
-    name               = "name"
-    picture            = "picture"
-    preferred_username = "sub"
-    username           = "sub"
-  }
-}
-
 # ==============================================================================
 # FACEBOOK IDENTITY PROVIDER
 # ==============================================================================
@@ -213,40 +179,6 @@ variable "enable_facebook_provider" {
   description = "Whether to enable Facebook as an identity provider"
   type        = bool
   default     = false
-}
-
-variable "facebook_app_id" {
-  description = "Facebook App ID"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "facebook_app_secret" {
-  description = "Facebook App Secret"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "facebook_scopes" {
-  description = "List of Facebook permissions to request"
-  type        = list(string)
-  default     = ["public_profile", "email"]
-}
-
-variable "facebook_attribute_mapping" {
-  description = "Mapping of Facebook attributes to Cognito attributes"
-  type        = map(string)
-  default = {
-    email              = "email"
-    family_name        = "last_name"
-    given_name         = "first_name"
-    name               = "name"
-    picture            = "picture"
-    preferred_username = "id"
-    username           = "id"
-  }
 }
 
 # ==============================================================================
@@ -259,53 +191,6 @@ variable "enable_apple_provider" {
   default     = false
 }
 
-variable "apple_services_id" {
-  description = "Apple Services ID (Client ID)"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "apple_team_id" {
-  description = "Apple Team ID"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "apple_key_id" {
-  description = "Apple Key ID"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "apple_private_key" {
-  description = "Apple Private Key (PEM format)"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "apple_scopes" {
-  description = "List of Apple scopes to request"
-  type        = list(string)
-  default     = ["name", "email"]
-}
-
-variable "apple_attribute_mapping" {
-  description = "Mapping of Apple attributes to Cognito attributes"
-  type        = map(string)
-  default = {
-    email              = "email"
-    family_name        = "lastName"
-    given_name         = "firstName"
-    name               = "name"
-    preferred_username = "sub"
-    username           = "sub"
-  }
-}
-
 # ==============================================================================
 # AMAZON IDENTITY PROVIDER
 # ==============================================================================
@@ -314,37 +199,6 @@ variable "enable_amazon_provider" {
   description = "Whether to enable Amazon as an identity provider"
   type        = bool
   default     = false
-}
-
-variable "amazon_client_id" {
-  description = "Amazon OAuth 2.0 client ID"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "amazon_client_secret" {
-  description = "Amazon OAuth 2.0 client secret"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "amazon_scopes" {
-  description = "List of Amazon OAuth scopes to request"
-  type        = list(string)
-  default     = ["profile"]
-}
-
-variable "amazon_attribute_mapping" {
-  description = "Mapping of Amazon attributes to Cognito attributes"
-  type        = map(string)
-  default = {
-    email              = "email"
-    name               = "name"
-    preferred_username = "user_id"
-    username           = "user_id"
-  }
 }
 
 # ==============================================================================
@@ -363,31 +217,6 @@ variable "saml_provider_name" {
   default     = "SAML"
 }
 
-variable "saml_metadata_url" {
-  description = "URL to the SAML metadata document"
-  type        = string
-  default     = ""
-}
-
-variable "saml_attribute_mapping" {
-  description = "Mapping of SAML attributes to Cognito attributes"
-  type        = map(string)
-  default = {
-    email              = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-    family_name        = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
-    given_name         = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
-    name               = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-    preferred_username = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-    username           = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-  }
-}
-
-variable "saml_idp_identifiers" {
-  description = "List of SAML IdP identifiers"
-  type        = list(string)
-  default     = []
-}
-
 # ==============================================================================
 # OIDC IDENTITY PROVIDER
 # ==============================================================================
@@ -402,46 +231,6 @@ variable "oidc_provider_name" {
   description = "Name for the OIDC identity provider"
   type        = string
   default     = "OIDC"
-}
-
-variable "oidc_client_id" {
-  description = "OIDC client ID"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "oidc_client_secret" {
-  description = "OIDC client secret"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "oidc_issuer_url" {
-  description = "OIDC issuer URL"
-  type        = string
-  default     = ""
-}
-
-variable "oidc_scopes" {
-  description = "List of OIDC scopes to request"
-  type        = list(string)
-  default     = ["openid", "profile", "email"]
-}
-
-variable "oidc_attribute_mapping" {
-  description = "Mapping of OIDC attributes to Cognito attributes"
-  type        = map(string)
-  default = {
-    email              = "email"
-    family_name        = "family_name"
-    given_name         = "given_name"
-    name               = "name"
-    picture            = "picture"
-    preferred_username = "preferred_username"
-    username           = "sub"
-  }
 }
 
 # ==============================================================================
@@ -498,17 +287,6 @@ variable "temporary_password_validity_days" {
 # SECURITY CONFIGURATION
 # ==============================================================================
 
-variable "advanced_security_mode" {
-  description = "Mode for advanced security features"
-  type        = string
-  default     = "AUDIT"
-
-  validation {
-    condition     = contains(["OFF", "AUDIT", "ENFORCED"], var.advanced_security_mode)
-    error_message = "Advanced security mode must be one of: OFF, AUDIT, ENFORCED."
-  }
-}
-
 variable "mfa_configuration" {
   description = "Multi-Factor Authentication (MFA) configuration"
   type        = string
@@ -529,4 +307,62 @@ variable "user_pool_tier" {
     condition     = contains(["LITE", "ESSENTIALS", "PLUS"], var.user_pool_tier)
     error_message = "User pool tier must be one of: LITE, ESSENTIALS, PLUS."
   }
+}
+variable "identity_providers_config" {
+  description = "Configuration for optional identity providers"
+  type = object({
+    google = optional(object({
+      enabled           = optional(bool, false)
+      client_id         = optional(string)
+      client_secret     = optional(string)
+      scopes            = optional(list(string), ["openid", "email", "profile"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+
+    facebook = optional(object({
+      enabled           = optional(bool, false)
+      app_id            = optional(string)
+      app_secret        = optional(string)
+      scopes            = optional(list(string), ["public_profile", "email"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+
+    apple = optional(object({
+      enabled           = optional(bool, false)
+      services_id       = optional(string)
+      team_id           = optional(string)
+      key_id            = optional(string)
+      private_key       = optional(string)
+      scopes            = optional(list(string), ["name", "email"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+
+    amazon = optional(object({
+      enabled           = optional(bool, false)
+      client_id         = optional(string)
+      client_secret     = optional(string)
+      scopes            = optional(list(string), ["profile"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+
+    saml = optional(object({
+      enabled           = optional(bool, false)
+      provider_name     = optional(string)
+      metadata_url      = optional(string)
+      attribute_mapping = optional(map(string), {})
+      idp_identifiers   = optional(list(string), [])
+    }), {})
+
+    oidc = optional(object({
+      enabled           = optional(bool, false)
+      provider_name     = optional(string)
+      client_id         = optional(string)
+      client_secret     = optional(string)
+      issuer_url        = optional(string)
+      scopes            = optional(list(string), ["openid", "email", "profile"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+  })
+
+  default = {}
 }

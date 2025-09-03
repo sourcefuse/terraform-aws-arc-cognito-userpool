@@ -1,7 +1,6 @@
 # ==============================================================================
 # COGNITO USER POOL
 # ==============================================================================
-
 resource "aws_cognito_user_pool" "this" {
   name                     = var.name
   deletion_protection      = var.deletion_protection
@@ -27,47 +26,16 @@ resource "aws_cognito_user_pool" "this" {
     }
   }
 
-  # Advanced Security Configuration
+  # User Pool Add-ons (Threat Detection / Security)
   dynamic "user_pool_add_ons" {
-    for_each = var.advanced_security_mode != "OFF" ? [1] : []
+    for_each = var.user_pool_add_ons != null ? [var.user_pool_add_ons] : []
     content {
-      advanced_security_mode = var.advanced_security_mode
+      advanced_security_mode = user_pool_add_ons.value.advanced_security_mode
 
       dynamic "advanced_security_additional_flows" {
-        for_each = var.custom_auth_mode != null ? [1] : []
+        for_each = user_pool_add_ons.value.advanced_security_additional_flows != null ? [user_pool_add_ons.value.advanced_security_additional_flows] : []
         content {
-          custom_auth_mode = var.custom_auth_mode
-        }
-      }
-    }
-  }
-
-  # Account Recovery Settings
-  dynamic "account_recovery_setting" {
-    for_each = length(var.account_recovery_mechanisms) > 0 ? [1] : []
-    content {
-      dynamic "recovery_mechanism" {
-        for_each = var.account_recovery_mechanisms
-        content {
-          name     = recovery_mechanism.value.name
-          priority = recovery_mechanism.value.priority
-        }
-      }
-    }
-  }
-
-  # Admin Create User Configuration
-  dynamic "admin_create_user_config" {
-    for_each = var.admin_create_user_config != null ? [var.admin_create_user_config] : []
-    content {
-      allow_admin_create_user_only = admin_create_user_config.value.allow_admin_create_user_only
-
-      dynamic "invite_message_template" {
-        for_each = admin_create_user_config.value.invite_message_template != null ? [admin_create_user_config.value.invite_message_template] : []
-        content {
-          email_message = invite_message_template.value.email_message
-          email_subject = invite_message_template.value.email_subject
-          sms_message   = invite_message_template.value.sms_message
+          custom_auth_mode = advanced_security_additional_flows.value.custom_auth_mode
         }
       }
     }
@@ -135,7 +103,32 @@ resource "aws_cognito_user_pool" "this" {
       attributes_require_verification_before_update = user_attribute_update_settings.value.attributes_require_verification_before_update
     }
   }
+  # Account recovery mechanism
+  account_recovery_setting {
+    dynamic "recovery_mechanism" {
+      for_each = var.account_recovery_mechanisms
+      content {
+        name     = recovery_mechanism.value.name
+        priority = recovery_mechanism.value.priority
+      }
+    }
+  }
+  # Admin Create user config
+  dynamic "admin_create_user_config" {
+    for_each = length(var.admin_create_user_config) > 0 ? [var.admin_create_user_config] : []
+    content {
+      allow_admin_create_user_only = lookup(admin_create_user_config.value, "allow_admin_create_user_only", false)
 
+      dynamic "invite_message_template" {
+        for_each = length(lookup(admin_create_user_config.value, "invite_message_template", {})) > 0 ? [lookup(admin_create_user_config.value, "invite_message_template", {})] : []
+        content {
+          email_message = lookup(invite_message_template.value, "email_message", null)
+          email_subject = lookup(invite_message_template.value, "email_subject", null)
+          sms_message   = lookup(invite_message_template.value, "sms_message", null)
+        }
+      }
+    }
+  }
   # Lambda Configuration
   dynamic "lambda_config" {
     for_each = local.lambda_config != null ? [local.lambda_config] : []
@@ -231,29 +224,25 @@ resource "aws_cognito_user_pool" "this" {
   tags = var.tags
 
   lifecycle {
-    ignore_changes = [
-      schema,
-    ]
+    ignore_changes = [schema]
   }
 }
 
 # ==============================================================================
 # USER POOL CLIENTS
 # ==============================================================================
-
 resource "aws_cognito_user_pool_client" "this" {
-  count = local.create_user_pool_clients ? length(local.user_pool_clients) : 0
+  for_each = local.create_user_pool_clients ? local.user_pool_clients : {}
 
-  name         = local.user_pool_clients[count.index].name
+  name         = each.value.name
   user_pool_id = aws_cognito_user_pool.this.id
 
-  # Token Validity
-  access_token_validity  = local.user_pool_clients[count.index].access_token_validity
-  id_token_validity      = local.user_pool_clients[count.index].id_token_validity
-  refresh_token_validity = local.user_pool_clients[count.index].refresh_token_validity
+  access_token_validity  = each.value.access_token_validity
+  id_token_validity      = each.value.id_token_validity
+  refresh_token_validity = each.value.refresh_token_validity
 
   dynamic "token_validity_units" {
-    for_each = local.user_pool_clients[count.index].token_validity_units != null ? [local.user_pool_clients[count.index].token_validity_units] : []
+    for_each = each.value.token_validity_units != null ? [each.value.token_validity_units] : []
     content {
       access_token  = token_validity_units.value.access_token
       id_token      = token_validity_units.value.id_token
@@ -261,95 +250,177 @@ resource "aws_cognito_user_pool_client" "this" {
     }
   }
 
-  # OAuth Configuration
-  allowed_oauth_flows                  = local.user_pool_clients[count.index].allowed_oauth_flows
-  allowed_oauth_flows_user_pool_client = local.user_pool_clients[count.index].allowed_oauth_flows_user_pool_client
-  allowed_oauth_scopes                 = local.user_pool_clients[count.index].allowed_oauth_scopes
-  callback_urls                        = local.user_pool_clients[count.index].callback_urls
-  default_redirect_uri                 = local.user_pool_clients[count.index].default_redirect_uri
-  logout_urls                          = local.user_pool_clients[count.index].logout_urls
+  allowed_oauth_flows                  = each.value.allowed_oauth_flows
+  allowed_oauth_flows_user_pool_client = each.value.allowed_oauth_flows_user_pool_client
+  allowed_oauth_scopes                 = each.value.allowed_oauth_scopes
+  callback_urls                        = each.value.callback_urls
+  default_redirect_uri                 = each.value.default_redirect_uri
+  logout_urls                          = each.value.logout_urls
 
-  # Authentication Configuration
-  explicit_auth_flows           = local.user_pool_clients[count.index].explicit_auth_flows
-  generate_secret               = local.user_pool_clients[count.index].generate_secret
-  prevent_user_existence_errors = local.user_pool_clients[count.index].prevent_user_existence_errors
+  explicit_auth_flows           = each.value.explicit_auth_flows
+  generate_secret               = each.value.generate_secret
+  prevent_user_existence_errors = each.value.prevent_user_existence_errors
 
-  # Attributes
-  read_attributes  = local.user_pool_clients[count.index].read_attributes
-  write_attributes = local.user_pool_clients[count.index].write_attributes
+  read_attributes  = each.value.read_attributes
+  write_attributes = each.value.write_attributes
 
-  # Identity Providers
-  supported_identity_providers = local.user_pool_clients[count.index].supported_identity_providers
+  supported_identity_providers = [
+    for p in local.identity_providers : p.provider_name
+  ]
 
-  # Additional Settings
-  enable_token_revocation                       = local.user_pool_clients[count.index].enable_token_revocation
-  enable_propagate_additional_user_context_data = local.user_pool_clients[count.index].enable_propagate_additional_user_context_data
-  auth_session_validity                         = local.user_pool_clients[count.index].auth_session_validity
 
-  depends_on = [aws_cognito_user_pool.this]
+  enable_token_revocation                       = each.value.enable_token_revocation
+  enable_propagate_additional_user_context_data = each.value.enable_propagate_additional_user_context_data
+  auth_session_validity                         = each.value.auth_session_validity
+
+  depends_on = [aws_cognito_user_pool.this, aws_cognito_identity_provider.this]
 }
+resource "aws_cognito_user_pool_client" "hosted_ui" {
+  for_each = var.hosted_ui_config != null ? {
+    "hosted_ui_client" = var.hosted_ui_config
+  } : {}
+
+  name         = each.value.name
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  allowed_oauth_flows                  = each.value.allowed_oauth_flows
+  allowed_oauth_flows_user_pool_client = each.value.allowed_oauth_flows_user_pool_client
+  allowed_oauth_scopes                 = each.value.allowed_oauth_scopes
+  supported_identity_providers         = each.value.supported_identity_providers
+
+  callback_urls        = each.value.callback_urls
+  logout_urls          = each.value.logout_urls
+  default_redirect_uri = try(each.value.default_redirect_uri, null)
+
+  generate_secret = each.value.generate_secret
+
+  depends_on = [
+    aws_cognito_user_pool.this,
+    aws_cognito_identity_provider.this
+  ]
+}
+resource "aws_cognito_user_pool_ui_customization" "hosted_ui" {
+  for_each = var.hosted_ui_config != null && (
+    var.hosted_ui_config.css_file != null ||
+    var.hosted_ui_config.image_file != null
+    ) ? {
+    "hosted_ui_customization" = var.hosted_ui_config
+  } : {}
+
+  user_pool_id = aws_cognito_user_pool.this.id
+  client_id    = aws_cognito_user_pool_client.hosted_ui["hosted_ui_client"].id
+
+  css        = try(file(each.value.css_file), null)
+  image_file = try(filebase64(each.value.image_file), null)
+}
+
 
 # ==============================================================================
 # USER POOL DOMAIN
 # ==============================================================================
-
 resource "aws_cognito_user_pool_domain" "this" {
-  count = local.create_user_pool_domain ? 1 : 0
+  for_each = local.create_user_pool_domain ? {
+    (var.user_pool_domain.domain) = var.user_pool_domain
+  } : {}
 
-  domain          = var.user_pool_domain.domain
-  certificate_arn = var.user_pool_domain.certificate_arn
+  domain          = each.value.domain
   user_pool_id    = aws_cognito_user_pool.this.id
+  certificate_arn = try(each.value.certificate_arn, null)
+
+  depends_on = [aws_cognito_user_pool.this]
+}
+resource "aws_cognito_user_pool_domain" "hosted_ui" {
+  for_each = var.hosted_ui_config != null ? {
+    (var.hosted_ui_config.domain) = var.hosted_ui_config
+  } : {}
+
+  domain          = each.value.domain
+  user_pool_id    = aws_cognito_user_pool.this.id
+  certificate_arn = try(each.value.certificate_arn, null)
 
   depends_on = [aws_cognito_user_pool.this]
 }
 
+
 # ==============================================================================
 # IDENTITY PROVIDERS
 # ==============================================================================
-
 resource "aws_cognito_identity_provider" "this" {
-  count = local.create_identity_providers ? length(var.identity_providers) : 0
+  for_each = local.create_identity_providers ? {
+    for idp in local.identity_providers : idp.provider_name => idp
+  } : {}
 
-  user_pool_id  = aws_cognito_user_pool.this.id
-  provider_name = var.identity_providers[count.index].provider_name
-  provider_type = var.identity_providers[count.index].provider_type
-
-  provider_details  = var.identity_providers[count.index].provider_details
-  attribute_mapping = var.identity_providers[count.index].attribute_mapping
-  idp_identifiers   = var.identity_providers[count.index].idp_identifiers
+  user_pool_id      = aws_cognito_user_pool.this.id
+  provider_name     = each.value.provider_name
+  provider_type     = each.value.provider_type
+  provider_details  = each.value.provider_details
+  attribute_mapping = each.value.attribute_mapping
+  idp_identifiers   = try(each.value.idp_identifiers, null)
 
   depends_on = [aws_cognito_user_pool.this]
+}
+# ==============================================================================
+# USER POOL USERS
+# ==============================================================================
+resource "aws_cognito_user" "users" {
+  for_each = var.create_user_pool_users ? {
+    for u in var.user_pool_users : u.username => u
+  } : {}
+
+  user_pool_id       = aws_cognito_user_pool.this.id
+  username           = each.value.username
+  temporary_password = each.value.password
+
+  attributes = {
+    email = each.value.email
+  }
 }
 
 # ==============================================================================
 # USER POOL GROUPS
 # ==============================================================================
-
 resource "aws_cognito_user_group" "this" {
-  count = local.create_user_pool_groups ? length(var.user_pool_groups) : 0
+  for_each = var.create_user_pool_groups ? {
+    for g in var.user_pool_groups : g.name => g
+  } : {}
 
-  name         = var.user_pool_groups[count.index].name
   user_pool_id = aws_cognito_user_pool.this.id
-  description  = var.user_pool_groups[count.index].description
-  precedence   = var.user_pool_groups[count.index].precedence
-  role_arn     = var.user_pool_groups[count.index].role_arn
+  name         = each.value.name
+  description  = try(each.value.description, null)
+  precedence   = try(each.value.precedence, null)
+  role_arn     = try(each.value.role_arn, null)
+}
 
-  depends_on = [aws_cognito_user_pool.this]
+resource "aws_cognito_user_in_group" "this" {
+  for_each = {
+    for m in var.user_group_memberships : "${m.user}:${m.group}" => m
+    if var.create_user_pool_groups && var.create_user_pool_users
+  }
+
+  user_pool_id = aws_cognito_user_pool.this.id
+  username     = aws_cognito_user.users[each.value.user].username
+  group_name   = aws_cognito_user_group.this[each.value.group].name
+
+  depends_on = [
+    aws_cognito_user.users,
+    aws_cognito_user_group.this
+  ]
 }
 
 # ==============================================================================
 # RESOURCE SERVERS
 # ==============================================================================
-
 resource "aws_cognito_resource_server" "this" {
-  count = local.create_resource_servers ? length(var.resource_servers) : 0
+  for_each = local.create_resource_servers ? {
+    for rs in var.resource_servers : rs.identifier => rs
+  } : {}
 
-  identifier   = var.resource_servers[count.index].identifier
-  name         = var.resource_servers[count.index].name
+  identifier   = each.value.identifier
+  name         = each.value.name
   user_pool_id = aws_cognito_user_pool.this.id
 
   dynamic "scope" {
-    for_each = var.resource_servers[count.index].scope
+    for_each = each.value.scope
     content {
       scope_name        = scope.value.scope_name
       scope_description = scope.value.scope_description
@@ -357,4 +428,140 @@ resource "aws_cognito_resource_server" "this" {
   }
 
   depends_on = [aws_cognito_user_pool.this]
+}
+
+# ==============================================================================
+# WAFv2 WEB ACL (Optional)
+# ==============================================================================
+resource "aws_wafv2_web_acl_association" "cognito_waf" {
+  count        = var.web_acl_arn != null ? 1 : 0
+  resource_arn = aws_cognito_user_pool.this.arn
+  web_acl_arn  = var.web_acl_arn
+}
+
+# ==============================================================================
+# LOG STREAMING
+# ==============================================================================
+resource "aws_cognito_log_delivery_configuration" "this" {
+  count        = var.cognito_log_delivery_config == null ? 0 : 1
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  log_configurations {
+    event_source = var.cognito_log_delivery_config.event_source
+    log_level    = var.cognito_log_delivery_config.log_level
+
+    dynamic "cloud_watch_logs_configuration" {
+      for_each = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "cloudwatch" ? [1] : []
+      content {
+        log_group_arn = aws_cloudwatch_log_group.this[0].arn
+      }
+    }
+
+    dynamic "s3_configuration" {
+      for_each = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "s3" ? [1] : []
+      content {
+        bucket_arn = aws_s3_bucket.this["create"].arn
+      }
+    }
+
+    dynamic "firehose_configuration" {
+      for_each = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "firehose" ? [1] : []
+      content {
+        stream_arn = var.cognito_log_delivery_config.firehose_stream_arn
+      }
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "this" {
+  count             = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "cloudwatch" ? 1 : 0
+  name              = coalesce(var.cognito_log_delivery_config.log_group_name, "cognito-log-group")
+  retention_in_days = 30
+}
+
+resource "aws_s3_bucket" "this" {
+  for_each = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "s3" ? { create = true } : {}
+
+  bucket        = var.cognito_log_delivery_config.s3_bucket_name
+  force_destroy = true
+}
+
+# ==============================================================================
+# Threat Detection
+# ==============================================================================
+resource "aws_cognito_risk_configuration" "this" {
+  user_pool_id = aws_cognito_user_pool.this.id
+  client_id    = "ALL"
+
+  dynamic "account_takeover_risk_configuration" {
+    for_each = var.account_takeover_risk_configuration != null ? [var.account_takeover_risk_configuration] : []
+    content {
+      notify_configuration {
+        from       = lookup(account_takeover_risk_configuration.value.notify_configuration, "from", null)
+        reply_to   = lookup(account_takeover_risk_configuration.value.notify_configuration, "reply_to", null)
+        source_arn = account_takeover_risk_configuration.value.notify_configuration.source_arn
+
+        dynamic "block_email" {
+          for_each = lookup(account_takeover_risk_configuration.value.notify_configuration, "block_email", null) != null ? [account_takeover_risk_configuration.value.notify_configuration.block_email] : []
+          content {
+            html_body = block_email.value.html_body
+            text_body = block_email.value.text_body
+            subject   = block_email.value.subject
+          }
+        }
+
+        dynamic "mfa_email" {
+          for_each = lookup(account_takeover_risk_configuration.value.notify_configuration, "mfa_email", null) != null ? [account_takeover_risk_configuration.value.notify_configuration.mfa_email] : []
+          content {
+            html_body = mfa_email.value.html_body
+            text_body = mfa_email.value.text_body
+            subject   = mfa_email.value.subject
+          }
+        }
+
+        dynamic "no_action_email" {
+          for_each = lookup(account_takeover_risk_configuration.value.notify_configuration, "no_action_email", null) != null ? [account_takeover_risk_configuration.value.notify_configuration.no_action_email] : []
+          content {
+            html_body = no_action_email.value.html_body
+            text_body = no_action_email.value.text_body
+            subject   = no_action_email.value.subject
+          }
+        }
+      }
+
+      actions {
+        high_action {
+          event_action = lookup(account_takeover_risk_configuration.value.actions.high_action, "event_action", null)
+          notify       = lookup(account_takeover_risk_configuration.value.actions.high_action, "notify", null)
+        }
+        medium_action {
+          event_action = lookup(account_takeover_risk_configuration.value.actions.medium_action, "event_action", null)
+          notify       = lookup(account_takeover_risk_configuration.value.actions.medium_action, "notify", null)
+        }
+        low_action {
+          event_action = lookup(account_takeover_risk_configuration.value.actions.low_action, "event_action", null)
+          notify       = lookup(account_takeover_risk_configuration.value.actions.low_action, "notify", null)
+        }
+      }
+    }
+  }
+
+  dynamic "compromised_credentials_risk_configuration" {
+    for_each = var.compromised_credentials_risk_configuration != null ? [var.compromised_credentials_risk_configuration] : []
+    content {
+      event_filter = lookup(compromised_credentials_risk_configuration.value, "event_filter", null)
+
+      actions {
+        event_action = compromised_credentials_risk_configuration.value.actions.event_action
+      }
+    }
+  }
+
+  dynamic "risk_exception_configuration" {
+    for_each = var.risk_exception_configuration != null ? [var.risk_exception_configuration] : []
+    content {
+      blocked_ip_range_list = lookup(risk_exception_configuration.value, "blocked_ip_range_list", null)
+      skipped_ip_range_list = lookup(risk_exception_configuration.value, "skipped_ip_range_list", null)
+    }
+  }
 }

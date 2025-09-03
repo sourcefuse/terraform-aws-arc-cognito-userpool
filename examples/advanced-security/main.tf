@@ -10,24 +10,17 @@ module "tags" {
   environment = var.environment
   project     = var.project_name
 
-  extra_tags = {
-    Example = "advanced-security"
-    Repo    = "github.com/your-org/terraform-aws-cognito-user-pool"
-    Tier    = "ADVANCED"
-  }
 }
 
 module "cognito_user_pool" {
   source = "../../"
 
-  # Basic configuration
   name = "${var.namespace}-${var.environment}-secure-pool"
 
-  # Authentication settings
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
+  user_pool_tier           = var.user_pool_tier
 
-  # Password policy - stronger for advanced security
   password_policy = {
     minimum_length                   = 12
     require_lowercase                = true
@@ -37,7 +30,6 @@ module "cognito_user_pool" {
     temporary_password_validity_days = 7
   }
 
-  # Account recovery
   account_recovery_mechanisms = [
     {
       name     = "verified_email"
@@ -45,16 +37,13 @@ module "cognito_user_pool" {
     }
   ]
 
-  # Email configuration
   email_configuration = {
     email_sending_account = "COGNITO_DEFAULT"
   }
 
-  # Verification messages
   email_verification_subject = "Verify your email for ${var.project_name}"
   email_verification_message = "Please click the link below to verify your email address: {####}"
 
-  # User pool clients with enhanced security
   user_pool_clients = [
     {
       name            = "${var.namespace}-${var.environment}-secure-client"
@@ -64,9 +53,9 @@ module "cognito_user_pool" {
         "ALLOW_REFRESH_TOKEN_AUTH"
       ]
       prevent_user_existence_errors = "ENABLED"
-      access_token_validity         = 30 # 30 minutes for security
-      id_token_validity             = 30 # 30 minutes for security
-      refresh_token_validity        = 7  # 7 days
+      access_token_validity         = 30
+      id_token_validity             = 30
+      refresh_token_validity        = 7
       token_validity_units = {
         access_token  = "minutes"
         id_token      = "minutes"
@@ -74,22 +63,26 @@ module "cognito_user_pool" {
       }
     }
   ]
+  #Risk_configuration
+  user_pool_add_ons                   = var.user_pool_add_ons
+  account_takeover_risk_configuration = var.account_takeover_risk_configuration
 
-  # ADVANCED SECURITY FEATURES (Requires ADVANCED pricing tier)
-  advanced_security_mode           = var.advanced_security_mode
-  mfa_configuration                = var.mfa_configuration
-  software_token_mfa_configuration = var.software_token_mfa_configuration
-  # Device configuration for remember device
+  compromised_credentials_risk_configuration = var.compromised_credentials_risk_configuration
+
+  risk_exception_configuration = var.risk_exception_configuration
+  cognito_log_delivery_config  = var.cognito_log_delivery_config
+
   device_configuration = {
     challenge_required_on_new_device      = true
     device_only_remembered_on_user_prompt = true
   }
 
-  # Username configuration
   username_configuration = {
     case_sensitive = false
   }
 
-  # Tags
+  mfa_configuration                = var.mfa_configuration
+  software_token_mfa_configuration = var.software_token_mfa_configuration
+
   tags = module.tags.tags
 }

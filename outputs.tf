@@ -51,26 +51,30 @@ output "user_pool_domain" {
 # USER POOL CLIENT OUTPUTS
 # ==============================================================================
 
+# ==============================================================================
+# USER POOL CLIENT OUTPUTS
+# ==============================================================================
+
 output "user_pool_client_ids" {
   description = "The IDs of the Cognito User Pool Clients"
-  value       = aws_cognito_user_pool_client.this[*].id
+  value       = [for c in values(aws_cognito_user_pool_client.this) : c.id]
 }
 
 output "user_pool_client_names" {
   description = "The names of the Cognito User Pool Clients"
-  value       = aws_cognito_user_pool_client.this[*].name
+  value       = [for c in values(aws_cognito_user_pool_client.this) : c.name]
 }
 
 output "user_pool_client_secrets" {
   description = "The client secrets of the Cognito User Pool Clients (sensitive)"
-  value       = aws_cognito_user_pool_client.this[*].client_secret
+  value       = [for c in values(aws_cognito_user_pool_client.this) : c.client_secret]
   sensitive   = true
 }
 
 output "user_pool_clients" {
   description = "Map of user pool client details"
   value = {
-    for idx, client in aws_cognito_user_pool_client.this : client.name => {
+    for k, client in aws_cognito_user_pool_client.this : k => {
       id                     = client.id
       name                   = client.name
       client_secret          = client.client_secret
@@ -118,13 +122,13 @@ output "user_pool_domain_version" {
 
 output "identity_provider_names" {
   description = "The names of the Cognito Identity Providers"
-  value       = aws_cognito_identity_provider.this[*].provider_name
+  value       = [for idp in values(aws_cognito_identity_provider.this) : idp.provider_name]
 }
 
 output "identity_providers" {
   description = "Map of identity provider details"
   value = {
-    for idx, idp in aws_cognito_identity_provider.this : idp.provider_name => {
+    for k, idp in aws_cognito_identity_provider.this : k => {
       provider_name     = idp.provider_name
       provider_type     = idp.provider_type
       user_pool_id      = idp.user_pool_id
@@ -140,18 +144,18 @@ output "identity_providers" {
 
 output "user_pool_group_names" {
   description = "The names of the Cognito User Pool Groups"
-  value       = aws_cognito_user_group.this[*].name
+  value       = [for g in values(aws_cognito_user_group.this) : g.id]
 }
 
 output "user_pool_groups" {
   description = "Map of user pool group details"
   value = {
-    for idx, group in aws_cognito_user_group.this : group.name => {
-      name         = group.name
-      description  = group.description
-      precedence   = group.precedence
-      role_arn     = group.role_arn
-      user_pool_id = group.user_pool_id
+    for k, g in aws_cognito_user_group.this : g.id => {
+      name         = g.id
+      description  = g.description
+      precedence   = g.precedence
+      role_arn     = g.role_arn
+      user_pool_id = g.user_pool_id
     }
   }
 }
@@ -162,18 +166,18 @@ output "user_pool_groups" {
 
 output "resource_server_identifiers" {
   description = "The identifiers of the Cognito Resource Servers"
-  value       = aws_cognito_resource_server.this[*].identifier
+  value       = [for rs in values(aws_cognito_resource_server.this) : rs.identifier]
 }
 
 output "resource_server_names" {
   description = "The names of the Cognito Resource Servers"
-  value       = aws_cognito_resource_server.this[*].name
+  value       = [for rs in values(aws_cognito_resource_server.this) : rs.name]
 }
 
 output "resource_servers" {
   description = "Map of resource server details"
   value = {
-    for idx, rs in aws_cognito_resource_server.this : rs.identifier => {
+    for k, rs in aws_cognito_resource_server.this : k => {
       identifier        = rs.identifier
       name              = rs.name
       user_pool_id      = rs.user_pool_id

@@ -90,32 +90,17 @@ variable "allow_admin_create_user_only" {
 # OPTIONAL VARIABLES - SECURITY
 # ==============================================================================
 
-variable "advanced_security_mode" {
-  description = "Mode for advanced security features"
-  type        = string
-  default     = "OFF"
-
-  validation {
-    condition     = contains(["OFF", "AUDIT", "ENFORCED"], var.advanced_security_mode)
-    error_message = "Advanced security mode must be one of: OFF, AUDIT, ENFORCED."
-  }
-}
-
 variable "mfa_configuration" {
   description = "Multi-Factor Authentication (MFA) configuration"
   type        = string
   default     = "OFF"
-
-  validation {
-    condition     = contains(["OFF", "ON", "OPTIONAL"], var.mfa_configuration)
-    error_message = "MFA configuration must be one of: OFF, ON, OPTIONAL."
-  }
 }
-
-variable "enable_software_token_mfa" {
-  description = "Whether to enable software token MFA (TOTP)"
-  type        = bool
-  default     = false
+variable "software_token_mfa_configuration" {
+  description = "Configuration for software token Multi-Factor Authentication (MFA) settings. Set to null to omit."
+  type = object({
+    enabled = bool
+  })
+  default = null
 }
 
 variable "challenge_required_on_new_device" {
@@ -128,4 +113,96 @@ variable "device_only_remembered_on_user_prompt" {
   description = "Whether devices are only remembered when user chooses to remember"
   type        = bool
   default     = true
+}
+variable "user_pool_groups" {
+  description = "List of Cognito groups to create"
+  type = list(object({
+    name        = string
+    description = optional(string, null)
+    precedence  = optional(number, null)
+    role_arn    = optional(string, null)
+  }))
+  default = []
+}
+
+variable "user_pool_users" {
+  description = "List of Cognito users to create"
+  type = list(object({
+    username = string
+    email    = string
+    password = string
+  }))
+  default = []
+}
+
+variable "user_group_memberships" {
+  description = "List of user-to-group memberships"
+  type = list(object({
+    user  = string
+    group = string
+  }))
+  default = []
+}
+
+variable "user_pool_tier" {
+  description = "The user pool feature plan, or tier"
+  type        = string
+  default     = "ESSENTIALS"
+
+  validation {
+    condition     = contains(["LITE", "ESSENTIALS", "PLUS"], var.user_pool_tier)
+    error_message = "User pool tier must be one of: LITE, ESSENTIALS, PLUS."
+  }
+}
+
+variable "deletion_protection" {
+  description = "When active, DeletionProtection prevents accidental deletion of your user pool"
+  type        = string
+  default     = "INACTIVE"
+
+  validation {
+    condition     = contains(["ACTIVE", "INACTIVE"], var.deletion_protection)
+    error_message = "Deletion protection must be either 'ACTIVE' or 'INACTIVE'."
+  }
+}
+
+variable "create_user_pool_groups" {
+  description = "Whether to create user pool groups"
+  type        = bool
+  default     = false
+}
+variable "create_user_pool_users" {
+  description = "Whether to create user pool users"
+  type        = bool
+  default     = false
+}
+variable "user_pool_clients" {
+  description = "List of user pool clients to create"
+  type = list(object({
+    name                   = string
+    access_token_validity  = optional(number, 60)
+    id_token_validity      = optional(number, 60)
+    refresh_token_validity = optional(number, 30)
+    token_validity_units = optional(object({
+      access_token  = optional(string, "minutes")
+      id_token      = optional(string, "minutes")
+      refresh_token = optional(string, "days")
+    }), {})
+    allowed_oauth_flows                           = optional(list(string), [])
+    allowed_oauth_flows_user_pool_client          = optional(bool, false)
+    allowed_oauth_scopes                          = optional(list(string), [])
+    callback_urls                                 = optional(list(string), [])
+    default_redirect_uri                          = optional(string)
+    explicit_auth_flows                           = optional(list(string), ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"])
+    generate_secret                               = optional(bool, false)
+    logout_urls                                   = optional(list(string), [])
+    prevent_user_existence_errors                 = optional(string, "ENABLED")
+    read_attributes                               = optional(list(string), [])
+    supported_identity_providers                  = optional(list(string), ["GOOGLE"])
+    write_attributes                              = optional(list(string), [])
+    enable_token_revocation                       = optional(bool, true)
+    enable_propagate_additional_user_context_data = optional(bool, false)
+    auth_session_validity                         = optional(number, 3)
+  }))
+  default = []
 }

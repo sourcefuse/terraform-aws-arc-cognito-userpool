@@ -8,14 +8,15 @@ module "tags" {
 
   environment = var.environment
   project     = var.project_name
-
 }
 
 module "cognito_user_pool" {
   source = "../../"
 
   # Basic configuration
-  name = "${var.namespace}-${var.environment}-user-pool"
+  name                = "${var.namespace}-${var.environment}-user-pool"
+  user_pool_tier      = var.user_pool_tier
+  deletion_protection = var.deletion_protection
 
   # Authentication settings
   username_attributes      = ["email"]
@@ -29,6 +30,7 @@ module "cognito_user_pool" {
     require_symbols                  = var.password_require_symbols
     require_uppercase                = var.password_require_uppercase
     temporary_password_validity_days = var.temporary_password_validity_days
+    password_history_size            = 5
   }
 
   # Account recovery
@@ -59,68 +61,40 @@ module "cognito_user_pool" {
   email_verification_message = "Please click the link below to verify your email address: {####}"
 
   # User pool clients
-  user_pool_clients = [
-    {
-      name            = "${var.namespace}-${var.environment}-web-client"
-      generate_secret = false
-      explicit_auth_flows = [
-        "ALLOW_USER_SRP_AUTH",
-        "ALLOW_ADMIN_USER_PASSWORD_AUTH",
-        "ALLOW_REFRESH_TOKEN_AUTH"
-      ]
-      prevent_user_existence_errors = "ENABLED"
-      access_token_validity         = 60 # 1 hour
-      id_token_validity             = 60 # 1 hour
-      refresh_token_validity        = 30 # 30 days
-      token_validity_units = {
-        access_token  = "minutes"
-        id_token      = "minutes"
-        refresh_token = "days"
-      }
-    },
-    {
-      name            = "${var.namespace}-${var.environment}-test-client"
-      generate_secret = false
-      explicit_auth_flows = [
-        "ALLOW_USER_SRP_AUTH",
-        "ALLOW_USER_PASSWORD_AUTH",
-        "ALLOW_ADMIN_USER_PASSWORD_AUTH",
-        "ALLOW_REFRESH_TOKEN_AUTH"
-      ]
-      prevent_user_existence_errors = "ENABLED"
-      access_token_validity         = 60 # 1 hour
-      id_token_validity             = 60 # 1 hour
-      refresh_token_validity        = 30 # 30 days
-      token_validity_units = {
-        access_token  = "minutes"
-        id_token      = "minutes"
-        refresh_token = "days"
-      }
-    }
-  ]
+  user_pool_clients = var.user_pool_clients
 
   # MFA Configuration
   mfa_configuration = var.mfa_configuration
 
-  # Software token MFA (TOTP) - Google Authenticator, etc.
-  software_token_mfa_configuration = var.enable_software_token_mfa ? {
-    enabled = true
-  } : null
+  # Authenticator token MFA
+  software_token_mfa_configuration = var.software_token_mfa_configuration # Need to be enabled if 'mfa_configuration' is "ON" or "OPTONAL".
 
-  # Device configuration for remember device
+  # Device configuration
   device_configuration = {
     challenge_required_on_new_device      = var.challenge_required_on_new_device
     device_only_remembered_on_user_prompt = var.device_only_remembered_on_user_prompt
   }
 
   # Security settings
-  advanced_security_mode = var.advanced_security_mode
+  user_pool_add_ons = null
 
   # Username configuration
   username_configuration = {
     case_sensitive = false
   }
+  create_user_pool_users  = var.create_user_pool_users
+  create_user_pool_groups = var.create_user_pool_groups
 
-  # Tags from arc-tags module
+
+  # Example: Pre-creating users
+  user_pool_users = var.user_pool_users
+
+  # Example: Groups
+  user_pool_groups = var.user_pool_groups
+
+  # Example: Add user to group
+  user_group_memberships = var.user_group_memberships
+
+  # Tags
   tags = module.tags.tags
 }

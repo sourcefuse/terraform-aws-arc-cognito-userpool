@@ -1,5 +1,5 @@
 # ==============================================================================
-# ADVANCED SECURITY EXAMPLE OUTPUTS
+# COGNITO USER POOL OUTPUTS (WITH THREAT DETECTION)
 # ==============================================================================
 
 output "user_pool_id" {
@@ -37,44 +37,39 @@ output "user_pool_jwks_uri" {
   value       = module.cognito_user_pool.user_pool_jwks_uri
 }
 
-output "advanced_security_mode" {
-  description = "The advanced security mode configured"
-  value       = var.advanced_security_mode
-}
+# ------------------------------------------------------------------------------
+# Threat Detection / Advanced Security Outputs
+# ------------------------------------------------------------------------------
 
-output "mfa_configuration" {
-  description = "The MFA configuration"
-  value       = var.mfa_configuration
-}
+# output "threat_detection_config" {
+#   description = "Threat detection / advanced security configuration applied to the User Pool"
+#   value       = var.threat_detection_config
+# }
 
-output "device_tracking_enabled" {
-  description = "Whether device tracking is enabled"
-  value       = true
-}
+# output "security_features" {
+#   description = "Summary of threat detection and advanced security features enabled"
+#   value = {
+#     standard_auth_mode   = try(var.threat_detection_config.standard_auth_enforcement_mode, null)
+#     custom_auth_mode     = try(var.threat_detection_config.custom_auth_enforcement_mode, null)
+#     compromised_creds    = try(var.threat_detection_config.compromised_credentials_detection, null)
+#     adaptive_auth        = try(var.threat_detection_config.adaptive_authentication, null)
+#     ip_exceptions        = try(var.threat_detection_config.ip_address_exceptions, null)
+#   }
+# }
 
-output "security_features" {
-  description = "Summary of security features enabled"
-  value = {
-    advanced_security_mode = var.advanced_security_mode
-    mfa_enabled            = var.mfa_configuration != "OFF"
-    device_tracking        = true
-    short_token_validity   = true
-    strong_password_policy = true
-  }
-}
+# output "summary" {
+#   description = "Summary of the Cognito User Pool with security posture"
+#   value = {
+#     user_pool_id   = module.cognito_user_pool.user_pool_id
+#     user_pool_name = module.cognito_user_pool.user_pool_name
+#     client_id      = module.cognito_user_pool.user_pool_client_ids[0]
 
-output "summary" {
-  description = "Summary of the advanced security setup"
-  value = {
-    user_pool_id   = module.cognito_user_pool.user_pool_id
-    user_pool_name = module.cognito_user_pool.user_pool_name
-    client_id      = module.cognito_user_pool.user_pool_client_ids[0]
-    security_tier  = "ADVANCED"
-    features_enabled = {
-      advanced_security = var.advanced_security_mode != "OFF"
-      mfa               = var.mfa_configuration != "OFF"
-      device_tracking   = true
-      enhanced_tokens   = true
-    }
-  }
-}
+#     threat_detection = {
+#       standard_auth_mode = try(var.threat_detection_config.standard_auth_enforcement_mode, null)
+#       custom_auth_mode   = try(var.threat_detection_config.custom_auth_enforcement_mode, null)
+#       compromised_creds  = var.threat_detection_config.compromised_credentials_detection != null
+#       adaptive_auth      = var.threat_detection_config.adaptive_authentication != null
+#       ip_exceptions      = length(try(var.threat_detection_config.ip_address_exceptions.always_allow, [])) > 0 || length(try(var.threat_detection_config.ip_address_exceptions.always_block, [])) > 0
+#     }
+#   }
+# }

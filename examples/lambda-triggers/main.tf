@@ -9,10 +9,6 @@ module "tags" {
   environment = var.environment
   project     = var.project_name
 
-  extra_tags = {
-    Example = "lambda-triggers"
-    Repo    = "github.com/your-org/terraform-aws-cognito-user-pool"
-  }
 }
 
 # ==============================================================================
@@ -68,40 +64,6 @@ module "pre_authentication_lambda" {
   timeout       = 30
 
   tags = module.tags.tags
-}
-
-# ==============================================================================
-# LAMBDA PERMISSIONS FOR COGNITO (FIXED TO USE MODULE OUTPUTS)
-# ==============================================================================
-
-resource "aws_lambda_permission" "cognito_pre_sign_up" {
-  count = var.enable_pre_sign_up_trigger ? 1 : 0
-
-  statement_id  = "AllowCognitoInvokePreSignUp"
-  action        = "lambda:InvokeFunction"
-  function_name = module.pre_sign_up_lambda[0].name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = module.cognito_user_pool.user_pool_arn
-}
-
-resource "aws_lambda_permission" "cognito_post_confirmation" {
-  count = var.enable_post_confirmation_trigger ? 1 : 0
-
-  statement_id  = "AllowCognitoInvokePostConfirmation"
-  action        = "lambda:InvokeFunction"
-  function_name = module.post_confirmation_lambda[0].name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = module.cognito_user_pool.user_pool_arn
-}
-
-resource "aws_lambda_permission" "cognito_pre_authentication" {
-  count = var.enable_pre_authentication_trigger ? 1 : 0
-
-  statement_id  = "AllowCognitoInvokePreAuthentication"
-  action        = "lambda:InvokeFunction"
-  function_name = module.pre_authentication_lambda[0].name
-  principal     = "cognito-idp.amazonaws.com"
-  source_arn    = module.cognito_user_pool.user_pool_arn
 }
 
 # ==============================================================================
@@ -169,8 +131,7 @@ module "cognito_user_pool" {
     }
   ]
 
-  advanced_security_mode = "OFF"
-  mfa_configuration      = "OFF"
+  mfa_configuration = "OFF"
 
   username_configuration = {
     case_sensitive = false

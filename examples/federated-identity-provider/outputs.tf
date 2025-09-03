@@ -86,11 +86,6 @@ output "identity_provider_names" {
   value       = module.cognito_user_pool.identity_provider_names
 }
 
-output "supported_identity_providers" {
-  description = "List of all supported identity providers"
-  value       = local.supported_identity_providers
-}
-
 output "enabled_providers" {
   description = "Map of enabled identity providers and their status"
   value = {
@@ -197,18 +192,17 @@ output "oidc_login_url" {
 output "oauth_configuration" {
   description = "OAuth configuration details for client applications"
   value = {
-    client_id                    = length(module.cognito_user_pool.user_pool_client_ids) > 0 ? module.cognito_user_pool.user_pool_client_ids[0] : null
-    client_secret                = var.generate_client_secret && length(module.cognito_user_pool.user_pool_client_secrets) > 0 ? module.cognito_user_pool.user_pool_client_secrets[0] : null
-    user_pool_id                 = module.cognito_user_pool.user_pool_id
-    hosted_ui_domain             = module.cognito_user_pool.user_pool_domain_name
-    hosted_ui_url                = module.cognito_user_pool.user_pool_hosted_ui_url
-    jwks_uri                     = module.cognito_user_pool.user_pool_jwks_uri
-    issuer                       = module.cognito_user_pool.user_pool_issuer
-    allowed_oauth_flows          = var.allowed_oauth_flows
-    allowed_oauth_scopes         = var.allowed_oauth_scopes
-    callback_urls                = var.callback_urls
-    logout_urls                  = var.logout_urls
-    supported_identity_providers = local.supported_identity_providers
+    client_id            = length(module.cognito_user_pool.user_pool_client_ids) > 0 ? module.cognito_user_pool.user_pool_client_ids[0] : null
+    client_secret        = var.generate_client_secret && length(module.cognito_user_pool.user_pool_client_secrets) > 0 ? module.cognito_user_pool.user_pool_client_secrets[0] : null
+    user_pool_id         = module.cognito_user_pool.user_pool_id
+    hosted_ui_domain     = module.cognito_user_pool.user_pool_domain_name
+    hosted_ui_url        = module.cognito_user_pool.user_pool_hosted_ui_url
+    jwks_uri             = module.cognito_user_pool.user_pool_jwks_uri
+    issuer               = module.cognito_user_pool.user_pool_issuer
+    allowed_oauth_flows  = var.allowed_oauth_flows
+    allowed_oauth_scopes = var.allowed_oauth_scopes
+    callback_urls        = var.callback_urls
+    logout_urls          = var.logout_urls
   }
   sensitive = true
 }

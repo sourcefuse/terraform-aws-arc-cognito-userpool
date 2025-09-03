@@ -13,7 +13,7 @@ variable "name" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - CORE CONFIGURATION
+#  VARIABLES - CORE CONFIGURATION
 # ==============================================================================
 
 variable "deletion_protection" {
@@ -78,7 +78,7 @@ variable "auto_verified_attributes" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - SECURITY CONFIGURATION
+#  VARIABLES - SECURITY CONFIGURATION
 # ==============================================================================
 
 variable "password_policy" {
@@ -110,30 +110,83 @@ variable "password_policy" {
   }
 }
 
-variable "advanced_security_mode" {
-  description = "Mode for advanced security features"
-  type        = string
-  default     = "AUDIT"
+variable "user_pool_add_ons" {
+  description = <<EOT
+Advanced security configuration for Cognito User Pool.
+- advanced_security_mode: OFF | AUDIT | ENFORCED
+- advanced_security_additional_flows: (optional) block for custom flows
+    - custom_auth_mode: e.g. "AUDIT" or "ENFORCED"
+EOT
 
-  validation {
-    condition     = contains(["OFF", "AUDIT", "ENFORCED"], var.advanced_security_mode)
-    error_message = "Advanced security mode must be one of: OFF, AUDIT, ENFORCED."
-  }
+  type = object({
+    advanced_security_mode = string
+    advanced_security_additional_flows = optional(object({
+      custom_auth_mode = string
+    }))
+  })
+  default = null
 }
 
-variable "custom_auth_mode" {
-  description = "Mode of threat protection operation in custom authentication"
-  type        = string
-  default     = "AUDIT"
+variable "account_takeover_risk_configuration" {
+  type = object({
+    notify_configuration = object({
+      from       = optional(string)
+      reply_to   = optional(string)
+      source_arn = string
+      block_email = optional(object({
+        html_body = string
+        text_body = string
+        subject   = string
+      }))
+      mfa_email = optional(object({
+        html_body = string
+        text_body = string
+        subject   = string
+      }))
+      no_action_email = optional(object({
+        html_body = string
+        text_body = string
+        subject   = string
+      }))
+    })
+    actions = object({
+      high_action = object({
+        event_action = string
+        notify       = bool
+      })
+      medium_action = object({
+        event_action = string
+        notify       = bool
+      })
+      low_action = object({
+        event_action = string
+        notify       = bool
+      })
+    })
+  })
+  default = null
+}
 
-  validation {
-    condition     = contains(["AUDIT", "ENFORCED"], var.custom_auth_mode)
-    error_message = "Custom auth mode must be one of: AUDIT, ENFORCED."
-  }
+variable "compromised_credentials_risk_configuration" {
+  type = object({
+    event_filter = optional(list(string))
+    actions = object({
+      event_action = string
+    })
+  })
+  default = null
+}
+
+variable "risk_exception_configuration" {
+  type = object({
+    blocked_ip_range_list = optional(list(string))
+    skipped_ip_range_list = optional(list(string))
+  })
+  default = null
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - ACCOUNT RECOVERY
+#  VARIABLES - ACCOUNT RECOVERY
 # ==============================================================================
 
 variable "account_recovery_mechanisms" {
@@ -144,7 +197,7 @@ variable "account_recovery_mechanisms" {
   }))
   default = [
     {
-      name     = "verified_email"
+      name     = "verified_email",
       priority = 1
     }
   ]
@@ -167,7 +220,7 @@ variable "account_recovery_mechanisms" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - ADMIN USER CREATION
+#  VARIABLES - ADMIN USER CREATION
 # ==============================================================================
 
 variable "admin_create_user_config" {
@@ -184,7 +237,7 @@ variable "admin_create_user_config" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - DEVICE CONFIGURATION
+#  VARIABLES - DEVICE CONFIGURATION
 # ==============================================================================
 
 variable "device_configuration" {
@@ -197,7 +250,7 @@ variable "device_configuration" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - EMAIL CONFIGURATION
+#  VARIABLES - EMAIL CONFIGURATION
 # ==============================================================================
 
 variable "email_configuration" {
@@ -248,7 +301,7 @@ variable "verification_message_template" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - SMS CONFIGURATION
+#  VARIABLES - SMS CONFIGURATION
 # ==============================================================================
 
 variable "sms_configuration" {
@@ -274,7 +327,7 @@ variable "sms_verification_message" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - SOFTWARE TOKEN MFA
+# VARIABLES - SOFTWARE TOKEN MFA
 # ==============================================================================
 
 variable "mfa_configuration" {
@@ -303,8 +356,6 @@ variable "software_token_mfa_configuration" {
     error_message = "software_token_mfa_configuration.enabled cannot be true when mfa_configuration is OFF."
   }
 }
-
-
 
 # ==============================================================================
 # OPTIONAL VARIABLES - USERNAME CONFIGURATION
@@ -447,7 +498,7 @@ variable "user_pool_clients" {
     logout_urls                                   = optional(list(string), [])
     prevent_user_existence_errors                 = optional(string, "ENABLED")
     read_attributes                               = optional(list(string), [])
-    supported_identity_providers                  = optional(list(string), ["COGNITO"])
+    supported_identity_providers                  = optional(list(string), ["GOOGLE"])
     write_attributes                              = optional(list(string), [])
     enable_token_revocation                       = optional(bool, true)
     enable_propagate_additional_user_context_data = optional(bool, false)
@@ -472,30 +523,80 @@ variable "user_pool_domain" {
 # ==============================================================================
 # OPTIONAL VARIABLES - IDENTITY PROVIDERS
 # ==============================================================================
+variable "identity_providers_config" {
+  description = "Configuration for optional identity providers"
+  type = object({
+    google = optional(object({
+      enabled           = optional(bool, false)
+      client_id         = optional(string)
+      client_secret     = optional(string)
+      scopes            = optional(list(string), ["openid", "email", "profile"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
 
-variable "identity_providers" {
-  description = "List of identity providers to create"
-  type = list(object({
-    provider_name     = string
-    provider_type     = string
-    attribute_mapping = optional(map(string), {})
-    idp_identifiers   = optional(list(string), [])
-    provider_details  = map(string)
-  }))
-  default = []
+    facebook = optional(object({
+      enabled           = optional(bool, false)
+      app_id            = optional(string)
+      app_secret        = optional(string)
+      scopes            = optional(list(string), ["public_profile", "email"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
 
-  validation {
-    condition = alltrue([
-      for idp in var.identity_providers : contains(["SAML", "Facebook", "Google", "LoginWithAmazon", "SignInWithApple", "OIDC"], idp.provider_type)
-    ])
-    error_message = "Provider type must be one of: SAML, Facebook, Google, LoginWithAmazon, SignInWithApple, OIDC."
-  }
+    apple = optional(object({
+      enabled           = optional(bool, false)
+      services_id       = optional(string)
+      team_id           = optional(string)
+      key_id            = optional(string)
+      private_key       = optional(string)
+      scopes            = optional(list(string), ["name", "email"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+
+    amazon = optional(object({
+      enabled           = optional(bool, false)
+      client_id         = optional(string)
+      client_secret     = optional(string)
+      scopes            = optional(list(string), ["profile"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+
+    saml = optional(object({
+      enabled           = optional(bool, false)
+      provider_name     = optional(string)
+      metadata_url      = optional(string)
+      attribute_mapping = optional(map(string), {})
+      idp_identifiers   = optional(list(string), [])
+    }), {})
+
+    oidc = optional(object({
+      enabled           = optional(bool, false)
+      provider_name     = optional(string)
+      client_id         = optional(string)
+      client_secret     = optional(string)
+      issuer_url        = optional(string)
+      scopes            = optional(list(string), ["openid", "email", "profile"])
+      attribute_mapping = optional(map(string), {})
+    }), {})
+  })
+
+  default = {}
 }
 
 # ==============================================================================
+# OPTIONAL VARIABLES - USER POOL USERS
+# ==============================================================================
+variable "user_pool_users" {
+  description = "List of Cognito users to create"
+  type = list(object({
+    username = string
+    email    = string
+    password = string
+  }))
+  default = []
+}
+# ==============================================================================
 # OPTIONAL VARIABLES - USER POOL GROUPS
 # ==============================================================================
-
 variable "user_pool_groups" {
   description = "List of user pool groups to create"
   type = list(object({
@@ -503,6 +604,14 @@ variable "user_pool_groups" {
     description = optional(string)
     precedence  = optional(number)
     role_arn    = optional(string)
+  }))
+  default = []
+}
+variable "user_group_memberships" {
+  description = "List of user-to-group memberships"
+  type = list(object({
+    user  = string
+    group = string
   }))
   default = []
 }
@@ -523,9 +632,32 @@ variable "resource_servers" {
   }))
   default = []
 }
+# ==============================================================================
+#  VARIABLES - HOSTED UI
+# ==============================================================================
+variable "hosted_ui_config" {
+  description = "Cognito Hosted UI configuration"
+  type = object({
+    name                                 = string
+    domain                               = string
+    certificate_arn                      = optional(string)
+    callback_urls                        = list(string)
+    logout_urls                          = list(string)
+    default_redirect_uri                 = optional(string)
+    allowed_oauth_flows                  = list(string)
+    allowed_oauth_flows_user_pool_client = optional(bool, true)
+    allowed_oauth_scopes                 = list(string)
+    supported_identity_providers         = list(string)
+    generate_secret                      = optional(bool, false)
+    css_file                             = optional(string)
+    image_file                           = optional(string)
+  })
+  default = null
+}
+
 
 # ==============================================================================
-# OPTIONAL VARIABLES - TAGGING
+# VARIABLES - TAGGING
 # ==============================================================================
 
 variable "tags" {
@@ -535,7 +667,7 @@ variable "tags" {
 }
 
 # ==============================================================================
-# OPTIONAL VARIABLES - CONDITIONAL RESOURCE CREATION
+#  VARIABLES - CONDITIONAL RESOURCE CREATION
 # ==============================================================================
 
 variable "create_user_pool_clients" {
@@ -550,14 +682,13 @@ variable "create_user_pool_domain" {
   default     = false
 }
 
-variable "create_identity_providers" {
-  description = "Whether to create identity providers"
+variable "create_user_pool_groups" {
+  description = "Whether to create user pool groups"
   type        = bool
   default     = false
 }
-
-variable "create_user_pool_groups" {
-  description = "Whether to create user pool groups"
+variable "create_user_pool_users" {
+  description = "Whether to create user pool users"
   type        = bool
   default     = false
 }
@@ -566,4 +697,36 @@ variable "create_resource_servers" {
   description = "Whether to create resource servers"
   type        = bool
   default     = false
+}
+
+
+variable "web_acl_arn" {
+  description = "Optional WAF Web ACL ARN to associate with Cognito User Pool. Null = inactive"
+  type        = string
+  default     = null
+}
+# ==============================================================================
+# VARIABLES - LOG STREAMING
+# ==============================================================================
+variable "cognito_log_delivery_config" {
+  type = object({
+    event_source         = string # e.g. "userAuthEvents" or "userNotification"
+    log_level            = string # "ERROR" or "INFO"
+    log_destination_type = string # "cloudwatch", "s3", "firehose"
+
+    # Optional overrides
+    log_group_name      = optional(string) # for CW logs
+    s3_bucket_name      = optional(string) # for S3
+    firehose_stream_arn = optional(string) # for Firehose
+  })
+  default = null
+  validation {
+    condition     = var.cognito_log_delivery_config == null || contains(["cloudwatch", "s3", "firehose"], var.cognito_log_delivery_config.log_destination_type)
+    error_message = "log_destination_type must be one of: cloudwatch, s3, firehose."
+  }
+
+  validation {
+    condition     = var.cognito_log_delivery_config == null || contains(["ERROR", "INFO"], var.cognito_log_delivery_config.log_level)
+    error_message = "log_level must be either ERROR or INFO."
+  }
 }
