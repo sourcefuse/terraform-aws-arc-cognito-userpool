@@ -705,9 +705,11 @@ variable "web_acl_arn" {
   type        = string
   default     = null
 }
+
 # ==============================================================================
 # VARIABLES - LOG STREAMING
 # ==============================================================================
+
 variable "cognito_log_delivery_config" {
   type = object({
     event_source         = string # e.g. "userAuthEvents" or "userNotification"
