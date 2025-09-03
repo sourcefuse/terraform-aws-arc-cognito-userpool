@@ -490,6 +490,11 @@ resource "aws_s3_bucket" "this" {
 # Threat Detection
 # ==============================================================================
 resource "aws_cognito_risk_configuration" "this" {
+  count = (
+    var.account_takeover_risk_configuration != null ||
+    var.compromised_credentials_risk_configuration != null ||
+    var.risk_exception_configuration != null
+  ) ? 1 : 0
   user_pool_id = aws_cognito_user_pool.this.id
   client_id    = "ALL"
 

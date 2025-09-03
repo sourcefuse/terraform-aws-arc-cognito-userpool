@@ -18,6 +18,8 @@ password_require_uppercase = true
 
 # Admin settings
 allow_admin_create_user_only = false
+create_user_pool_users       = true
+create_user_pool_groups      = true
 user_pool_groups = [
   {
     name        = "Admins"
