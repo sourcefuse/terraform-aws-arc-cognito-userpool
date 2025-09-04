@@ -20,27 +20,6 @@ This example demonstrates how to create a Cognito User Pool with a hosted authen
 - **Multi-Factor Authentication**: Optional TOTP-based MFA
 - **Email Verification**: Link-based or code-based email verification
 
-## Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web Client    │───▶│  Cognito Hosted  │───▶│   Your App      │
-│                 │    │       UI         │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │  Cognito User    │
-                       │      Pool        │
-                       └──────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │  Email Service   │
-                       │  (Verification)  │
-                       └──────────────────┘
-```
-
 ## Usage
 
 1. **Copy the example configuration**:
@@ -78,298 +57,69 @@ This example demonstrates how to create a Cognito User Pool with a hosted authen
    terraform output
    ```
 
-## Configuration Options
-
-### OAuth 2.0 Flows
-
-Configure which OAuth flows your application supports:
-
-```hcl
-# For single-page applications (SPA)
-allowed_oauth_flows = ["implicit"]
-
-# For server-side applications
-allowed_oauth_flows = ["code"]
-
-# For both
-allowed_oauth_flows = ["code", "implicit"]
-```
-
-### OAuth Scopes
-
-Control what information and permissions to grant:
-
-```hcl
-allowed_oauth_scopes = [
-  "email",                           # User's email address
-  "openid",                         # OpenID Connect
-  "profile",                        # User profile information
-  "aws.cognito.signin.user.admin"   # Full user management
-]
-```
-
-### Token Validity
-
-Configure how long tokens remain valid:
-
-```hcl
-access_token_validity  = 60   # 1 hour (5-1440 minutes)
-id_token_validity      = 60   # 1 hour (5-1440 minutes)
-refresh_token_validity = 30   # 30 days (1-3650 days)
-```
-
-### Client Secret
-
-For server-side applications that can securely store secrets:
-
-```hcl
-generate_client_secret = true
-```
-
-For single-page applications or mobile apps:
-
-```hcl
-generate_client_secret = false
-```
-
-## Testing the Hosted UI
-
-After deployment, you can test the hosted UI:
-
-1. **Get the hosted UI URL** from the outputs:
-   ```bash
-   terraform output hosted_ui_url
-   ```
-
-2. **Visit the login URL** (also provided in outputs):
-   ```
-   https://arc-dev-auth.auth.us-east-1.amazoncognito.com/login?client_id=<CLIENT_ID>&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:3000/callback
-   ```
-
-3. **Test the authentication flow**:
-   - Sign up with a new user
-   - Verify email address
-   - Sign in with credentials
-   - Test password reset
-   - Test MFA (if enabled)
-
-## Integration with Applications
-
-### Single-Page Applications (React/Vue/Angular)
-
-Use the AWS Amplify library:
-
-```javascript
-import { Amplify, Auth } from 'aws-amplify';
-
-// Configure Amplify
-Amplify.configure({
-  Auth: {
-    region: '<AWS_REGION>',
-    userPoolId: '<USER_POOL_ID>',
-    userPoolWebClientId: '<CLIENT_ID>',
-    oauth: {
-      domain: '<HOSTED_UI_DOMAIN>',
-      scope: ['email', 'openid', 'profile'],
-      redirectSignIn: 'http://localhost:3000/callback',
-      redirectSignOut: 'http://localhost:3000/logout',
-      responseType: 'code'
-    }
-  }
-});
-
-// Use hosted UI for authentication
-Auth.federatedSignIn();
-
-// Handle callback
-Auth.currentAuthenticatedUser()
-  .then(user => console.log(user))
-  .catch(err => console.log(err));
-```
-
-### Server-Side Applications (Node.js/Python/Java)
-
-Use the authorization code flow:
-
-```javascript
-// Node.js example with express
-const express = require('express');
-const axios = require('axios');
-const app = express();
-
-// Redirect to Cognito hosted UI
-app.get('/login', (req, res) => {
-  const authUrl = `https://<HOSTED_UI_DOMAIN>/login?client_id=<CLIENT_ID>&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:3000/callback`;
-  res.redirect(authUrl);
-});
-
-// Handle callback
-app.get('/callback', async (req, res) => {
-  const { code } = req.query;
-
-  try {
-    // Exchange code for tokens
-    const tokenResponse = await axios.post(`https://<HOSTED_UI_DOMAIN>/oauth2/token`, {
-      grant_type: 'authorization_code',
-      client_id: '<CLIENT_ID>',
-      client_secret: '<CLIENT_SECRET>', // Only if using client secret
-      code: code,
-      redirect_uri: 'http://localhost:3000/callback'
-    });
-
-    const { access_token, id_token, refresh_token } = tokenResponse.data;
-
-    // Store tokens securely and redirect user
-    res.redirect('/dashboard');
-  } catch (error) {
-    console.error('Token exchange failed:', error);
-    res.redirect('/login');
-  }
-});
-```
-
-### Mobile Applications
-
-Use AWS Amplify or AWS SDK:
-
-```swift
-// iOS Swift example
-import Amplify
-import AWSCognitoAuthPlugin
-
-// Configure Amplify
-let authPlugin = AWSCognitoAuthPlugin()
-try Amplify.add(plugin: authPlugin)
-
-let amplifyConfig = """
-{
-    "auth": {
-        "plugins": {
-            "awsCognitoAuthPlugin": {
-                "UserAgent": "aws-amplify-cli/0.1.0",
-                "Version": "0.1.0",
-                "IdentityManager": {
-                    "Default": {}
-                },
-                "CredentialsProvider": {
-                    "CognitoIdentity": {
-                        "Default": {
-                            "PoolId": "<IDENTITY_POOL_ID>",
-                            "Region": "<AWS_REGION>"
-                        }
-                    }
-                },
-                "CognitoUserPool": {
-                    "Default": {
-                        "PoolId": "<USER_POOL_ID>",
-                        "AppClientId": "<CLIENT_ID>",
-                        "Region": "<AWS_REGION>"
-                    }
-                },
-                "Auth": {
-                    "Default": {
-                        "OAuth": {
-                            "WebDomain": "<HOSTED_UI_DOMAIN>",
-                            "AppClientId": "<CLIENT_ID>",
-                            "SignInRedirectURI": "myapp://callback",
-                            "SignOutRedirectURI": "myapp://logout",
-                            "Scopes": ["email", "openid", "profile"]
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-"""
-
-try Amplify.configure(amplifyConfig)
-
-// Use hosted UI
-Amplify.Auth.signInWithWebUI(presentationAnchor: self.view.window!) { result in
-    switch result {
-    case .success:
-        print("Sign in succeeded")
-    case .failure(let error):
-        print("Sign in failed \(error)")
-    }
-}
-```
-
-## Customizing the Hosted UI
-
-While this example uses the default hosted UI, you can customize it by:
-
-1. **Adding custom CSS** (requires custom domain)
-2. **Configuring custom logos and branding**
-3. **Adding custom JavaScript for enhanced functionality**
-
-For advanced customization, consider using a custom domain:
-
-```hcl
-user_pool_domain = {
-  domain          = "auth.myapp.com"
-  certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
-}
-```
-
-## Security Considerations
-
-1. **HTTPS Only**: Always use HTTPS for callback and logout URLs in production
-2. **Client Secret**: Only use client secrets for server-side applications
-3. **Token Storage**: Store tokens securely (HttpOnly cookies for web, Keychain for mobile)
-4. **PKCE**: Consider using PKCE for additional security in public clients
-5. **Scope Limitation**: Only request the minimum required scopes
-6. **Token Rotation**: Implement proper refresh token rotation
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Invalid Redirect URI**: Ensure callback URLs match exactly (including trailing slashes)
-2. **CORS Issues**: Configure CORS properly for single-page applications
-3. **Token Validation**: Verify JWT tokens using the JWKS endpoint
-4. **MFA Setup**: Users need to set up MFA before it can be enforced
-
-### Debugging Tips
-
-1. **Check CloudWatch Logs**: Cognito logs authentication events
-2. **Use Browser Developer Tools**: Inspect network requests and responses
-3. **Validate JWT Tokens**: Use jwt.io to decode and verify tokens
-4. **Test with Postman**: Test OAuth flows manually
-
-## Cost Considerations
-
-- **Free Tier**: 50,000 MAUs (Monthly Active Users) free
-- **Hosted UI**: No additional cost for using hosted UI
-- **Advanced Security**: Additional charges when enabled in enforced mode
-- **Custom Domain**: Additional charges for custom SSL certificates
-
-## Next Steps
-
-Once you have the hosted UI working, you might want to explore:
-
-1. **[Federated Identity Provider Example](../federated-identity-provider/)** - Add external Identity providers for login
-2. **[Lambda Triggers Example](../lambda-triggers/)** - Add custom authentication logic
-3. **[Advanced Security](../advanced-security/)** - Add advanced security controls
-
-## Cleanup
-
-To destroy the resources:
-
-```bash
-terraform destroy
-```
-
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.3 |
-| aws | >= 5.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| aws | >= 5.0 |
+No providers.
+
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_cognito_user_pool"></a> [cognito\_user\_pool](#module\_cognito\_user\_pool) | ../../ | n/a |
+| <a name="module_tags"></a> [tags](#module\_tags) | sourcefuse/arc-tags/aws | 1.2.2 |
+
+## Resources
+
+No resources.
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_allowed_oauth_flows"></a> [allowed\_oauth\_flows](#input\_allowed\_oauth\_flows) | List of allowed OAuth flows | `list(string)` | <pre>[<br/>  "code",<br/>  "implicit"<br/>]</pre> | no |
+| <a name="input_allowed_oauth_scopes"></a> [allowed\_oauth\_scopes](#input\_allowed\_oauth\_scopes) | List of allowed OAuth scopes | `list(string)` | <pre>[<br/>  "email",<br/>  "openid",<br/>  "profile",<br/>  "aws.cognito.signin.user.admin"<br/>]</pre> | no |
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region where resources will be created | `string` | `"us-east-1"` | no |
+| <a name="input_callback_urls"></a> [callback\_urls](#input\_callback\_urls) | List of allowed callback URLs for the app client | `list(string)` | <pre>[<br/>  "http://localhost:3000/callback"<br/>]</pre> | no |
+| <a name="input_default_redirect_uri"></a> [default\_redirect\_uri](#input\_default\_redirect\_uri) | Default redirect URI for the app client | `string` | `"http://localhost:3000/callback"` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Environment name (e.g., dev, staging, prod) | `string` | `"dev"` | no |
+| <a name="input_generate_client_secret"></a> [generate\_client\_secret](#input\_generate\_client\_secret) | Whether to generate a client secret | `bool` | `false` | no |
+| <a name="input_hosted_ui_config"></a> [hosted\_ui\_config](#input\_hosted\_ui\_config) | Cognito Hosted UI configuration | <pre>object({<br/>    name                                 = string<br/>    domain                               = string<br/>    certificate_arn                      = optional(string)<br/>    callback_urls                        = list(string)<br/>    logout_urls                          = list(string)<br/>    default_redirect_uri                 = optional(string)<br/>    allowed_oauth_flows                  = list(string)<br/>    allowed_oauth_flows_user_pool_client = optional(bool, true)<br/>    allowed_oauth_scopes                 = list(string)<br/>    supported_identity_providers         = list(string)<br/>    generate_secret                      = optional(bool, false)<br/>    css_file                             = optional(string)<br/>    image_file                           = optional(string)<br/>  })</pre> | `null` | no |
+| <a name="input_logout_urls"></a> [logout\_urls](#input\_logout\_urls) | List of allowed logout URLs for the app client | `list(string)` | <pre>[<br/>  "http://localhost:3000/logout"<br/>]</pre> | no |
+| <a name="input_mfa_configuration"></a> [mfa\_configuration](#input\_mfa\_configuration) | Multi-Factor Authentication (MFA) configuration | `string` | `"OFF"` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace for the resources | `string` | `"arc"` | no |
+| <a name="input_password_minimum_length"></a> [password\_minimum\_length](#input\_password\_minimum\_length) | Minimum length of the password policy | `number` | `8` | no |
+| <a name="input_password_require_lowercase"></a> [password\_require\_lowercase](#input\_password\_require\_lowercase) | Whether to require lowercase letters in password | `bool` | `true` | no |
+| <a name="input_password_require_numbers"></a> [password\_require\_numbers](#input\_password\_require\_numbers) | Whether to require numbers in password | `bool` | `true` | no |
+| <a name="input_password_require_symbols"></a> [password\_require\_symbols](#input\_password\_require\_symbols) | Whether to require symbols in password | `bool` | `true` | no |
+| <a name="input_password_require_uppercase"></a> [password\_require\_uppercase](#input\_password\_require\_uppercase) | Whether to require uppercase letters in password | `bool` | `true` | no |
+| <a name="input_project_name"></a> [project\_name](#input\_project\_name) | Name of the project | `string` | `"cognito-hosted-ui"` | no |
+| <a name="input_temporary_password_validity_days"></a> [temporary\_password\_validity\_days](#input\_temporary\_password\_validity\_days) | Number of days a temporary password is valid | `number` | `7` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_hosted_ui_domain"></a> [hosted\_ui\_domain](#output\_hosted\_ui\_domain) | The domain name for the hosted UI |
+| <a name="output_hosted_ui_url"></a> [hosted\_ui\_url](#output\_hosted\_ui\_url) | The URL of the hosted UI |
+| <a name="output_login_url"></a> [login\_url](#output\_login\_url) | The login URL for the hosted UI |
+| <a name="output_logout_url"></a> [logout\_url](#output\_logout\_url) | The logout URL for the hosted UI |
+| <a name="output_oauth_configuration"></a> [oauth\_configuration](#output\_oauth\_configuration) | OAuth configuration details for client applications |
+| <a name="output_summary"></a> [summary](#output\_summary) | Summary of the created Cognito User Pool with Hosted UI |
+| <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | The ARN of the Cognito User Pool |
+| <a name="output_user_pool_client_id"></a> [user\_pool\_client\_id](#output\_user\_pool\_client\_id) | The ID of the Cognito User Pool Client |
+| <a name="output_user_pool_client_name"></a> [user\_pool\_client\_name](#output\_user\_pool\_client\_name) | The name of the Cognito User Pool Client |
+| <a name="output_user_pool_client_secret"></a> [user\_pool\_client\_secret](#output\_user\_pool\_client\_secret) | The client secret of the Cognito User Pool Client (if generated) |
+| <a name="output_user_pool_endpoint"></a> [user\_pool\_endpoint](#output\_user\_pool\_endpoint) | The endpoint name of the Cognito User Pool |
+| <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | The ID of the Cognito User Pool |
+| <a name="output_user_pool_issuer"></a> [user\_pool\_issuer](#output\_user\_pool\_issuer) | The issuer URL for the user pool |
+| <a name="output_user_pool_jwks_uri"></a> [user\_pool\_jwks\_uri](#output\_user\_pool\_jwks\_uri) | The JSON Web Key Set (JWKS) URI for the user pool |
+| <a name="output_user_pool_name"></a> [user\_pool\_name](#output\_user\_pool\_name) | The name of the Cognito User Pool |
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

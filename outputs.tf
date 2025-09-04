@@ -51,10 +51,6 @@ output "user_pool_domain" {
 # USER POOL CLIENT OUTPUTS
 # ==============================================================================
 
-# ==============================================================================
-# USER POOL CLIENT OUTPUTS
-# ==============================================================================
-
 output "user_pool_client_ids" {
   description = "The IDs of the Cognito User Pool Clients"
   value       = [for c in values(aws_cognito_user_pool_client.this) : c.id]

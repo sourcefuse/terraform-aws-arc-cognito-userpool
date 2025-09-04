@@ -7,8 +7,7 @@ locals {
   create_user_pool_clients  = var.create_user_pool_clients && length(var.user_pool_clients) > 0
   create_user_pool_domain   = var.create_user_pool_domain && var.user_pool_domain != null
   create_identity_providers = length(local.identity_providers) > 0
-  # create_user_pool_groups   = var.create_user_pool_groups && length(var.user_pool_groups) > 0
-  create_resource_servers = var.create_resource_servers && length(var.resource_servers) > 0
+  create_resource_servers   = var.create_resource_servers && length(var.resource_servers) > 0
 
   # Lambda configuration with conditional blocks
   lambda_config = var.lambda_config != null ? {

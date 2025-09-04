@@ -38,7 +38,7 @@ module "arc-cognito-userpool" {
   # Add further required variables
 }
 ```
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -160,7 +160,7 @@ No modules.
 | <a name="output_user_pool_jwks_uri"></a> [user\_pool\_jwks\_uri](#output\_user\_pool\_jwks\_uri) | The JSON Web Key Set (JWKS) URI for the user pool |
 | <a name="output_user_pool_last_modified_date"></a> [user\_pool\_last\_modified\_date](#output\_user\_pool\_last\_modified\_date) | The date the Cognito User Pool was last modified |
 | <a name="output_user_pool_name"></a> [user\_pool\_name](#output\_user\_pool\_name) | The name of the Cognito User Pool |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
 
 ## Development
 

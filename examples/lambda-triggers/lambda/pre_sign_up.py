@@ -24,7 +24,7 @@ def handler(event, context):
     blocked_domains = ['spam.com', 'blocked.com', 'gmail.com']
 
     if any(domain in user_email for domain in blocked_domains):
-        raise Exception("Email domain not allowed")
+        raise ValueError("Email domain not allowed")
 
     # Example: Add custom attributes
     # event['response']['userAttributes'] = {

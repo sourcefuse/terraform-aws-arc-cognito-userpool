@@ -1,4 +1,4 @@
-# Terraform AWS ARC (service-name) Module Usage Guide
+# Terraform AWS ARC (Cognito User Pool) Module Usage Guide
 
 ## Introduction
 
@@ -28,7 +28,7 @@ It supports:
 Before using this module, ensure you have the following:
 
 - AWS credentials configured.
-- Terraform installed (>= 1.3).
+- Terraform installed.
 - A working knowledge of:
   - AWS IAM & Cognito basics
   - Terraform HCL

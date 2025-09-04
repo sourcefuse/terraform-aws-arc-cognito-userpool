@@ -20,32 +20,6 @@ This example demonstrates how to create a Cognito User Pool with federated ident
 - **OAuth 2.0 Flows**: Support for authorization code and implicit grant flows
 - **Mixed Authentication**: Support both federated and native Cognito users
 
-## Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web Client    │───▶│  Cognito Hosted  │───▶│   Your App      │
-│                 │    │       UI         │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │  Cognito User    │
-                       │      Pool        │
-                       └──────────────────┘
-                              │
-                              ▼
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│   Google    │  │  Facebook   │  │    Apple    │  │   Amazon    │
-│   OAuth     │  │   OAuth     │  │   Sign In   │  │   OAuth     │
-└─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘
-
-┌─────────────┐  ┌─────────────┐
-│    SAML     │  │    OIDC     │
-│  Provider   │  │  Provider   │
-└─────────────┘  └─────────────┘
-```
-
 ## Supported Identity Providers
 
 ### 1. Google OAuth 2.0
@@ -105,23 +79,31 @@ First, set up your identity providers:
 
 ### 2. Deploy the Infrastructure
 
-1. **Copy the example configuration**:
+1. **Update the example configuration**:
    ```bash
-   cp terraform.tfvars.example terraform.tfvars
+   terraform.tfvars
    ```
 
 2. **Edit the variables** in `terraform.tfvars`:
    ```hcl
    # Enable Google provider
-   enable_google_provider = true
-   google_client_id       = "your-google-client-id.apps.googleusercontent.com"
-   google_client_secret   = "your-google-client-secret"
-
-   # Enable Facebook provider
-   enable_facebook_provider = true
-   facebook_app_id          = "your-facebook-app-id"
-   facebook_app_secret      = "your-facebook-app-secret"
-
+   identity_providers_config = {
+      google = {
+        enabled       = true
+        client_id     = "<google-client-id>"
+        client_secret = "<google-client-secret>"
+        scopes        = ["openid", "email", "profile"]
+        attribute_mapping = {
+          email              = "email"
+          family_name        = "family_name"
+          given_name         = "given_name"
+          name               = "name"
+          picture            = "picture"
+          preferred_username = "sub"
+          username           = "sub"
+        }
+      }
+    }
    # Update callback URLs
    callback_urls = [
      "http://localhost:3000/callback",
@@ -141,331 +123,92 @@ First, set up your identity providers:
    - Facebook: Add the same URL to Valid OAuth Redirect URIs
    - Apple: Configure the same URL in your Services ID
 
-## Configuration Examples
-
-### Google Provider Configuration
-
-```hcl
-enable_google_provider = true
-google_client_id       = "123456789-abcdef.apps.googleusercontent.com"
-google_client_secret   = "your-google-client-secret"
-google_scopes         = ["profile", "email", "openid"]
-
-# Custom attribute mapping
-google_attribute_mapping = {
-  email             = "email"
-  family_name       = "family_name"
-  given_name        = "given_name"
-  name              = "name"
-  picture           = "picture"
-  preferred_username = "sub"
-  username          = "sub"
-}
-```
-
-### Facebook Provider Configuration
-
-```hcl
-enable_facebook_provider = true
-facebook_app_id          = "1234567890123456"
-facebook_app_secret      = "your-facebook-app-secret"
-facebook_scopes          = ["public_profile", "email"]
-
-# Custom attribute mapping
-facebook_attribute_mapping = {
-  email             = "email"
-  family_name       = "last_name"
-  given_name        = "first_name"
-  name              = "name"
-  picture           = "picture"
-  preferred_username = "id"
-  username          = "id"
-}
-```
-
-### SAML Provider Configuration
-
-```hcl
-enable_saml_provider = true
-saml_provider_name   = "CompanySSO"
-saml_metadata_url    = "https://your-company.com/saml/metadata"
-
-# SAML attribute mapping
-saml_attribute_mapping = {
-  email             = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-  family_name       = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
-  given_name        = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
-  name              = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-  preferred_username = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-  username          = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-}
-```
-
-## Testing Federated Authentication
-
-After deployment, test each provider:
-
-1. **Get the hosted UI URL**:
-   ```bash
-   terraform output hosted_ui_url
-   ```
-
-2. **Test provider-specific login URLs**:
-   ```bash
-   # Google login
-   terraform output google_login_url
-
-   # Facebook login
-   terraform output facebook_login_url
-
-   # Apple login
-   terraform output apple_login_url
-   ```
-
-3. **Test the authentication flow**:
-   - Visit the provider-specific login URL
-   - Authenticate with the external provider
-   - Verify successful redirect to your callback URL
-   - Check that user attributes are properly mapped
-
-## Integration with Applications
-
-### Single-Page Applications
-
-```javascript
-import { Amplify, Auth } from 'aws-amplify';
-
-// Configure Amplify
-Amplify.configure({
-  Auth: {
-    region: '<AWS_REGION>',
-    userPoolId: '<USER_POOL_ID>',
-    userPoolWebClientId: '<CLIENT_ID>',
-    oauth: {
-      domain: '<HOSTED_UI_DOMAIN>',
-      scope: ['email', 'openid', 'profile'],
-      redirectSignIn: 'http://localhost:3000/callback',
-      redirectSignOut: 'http://localhost:3000/logout',
-      responseType: 'code'
-    }
-  }
-});
-
-// Sign in with specific provider
-Auth.federatedSignIn({provider: 'Google'});
-Auth.federatedSignIn({provider: 'Facebook'});
-Auth.federatedSignIn({provider: 'SignInWithApple'});
-
-// Sign in with hosted UI (shows all providers)
-Auth.federatedSignIn();
-
-// Get current user (works for both federated and Cognito users)
-Auth.currentAuthenticatedUser()
-  .then(user => {
-    console.log('User:', user);
-    console.log('Identity Provider:', user.attributes.identities);
-  })
-  .catch(err => console.log(err));
-```
-
-### Server-Side Applications
-
-```javascript
-// Node.js example
-const express = require('express');
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
-
-const app = express();
-
-// JWKS client for token verification
-const client = jwksClient({
-  jwksUri: '<JWKS_URI>'
-});
-
-// Redirect to specific provider
-app.get('/login/:provider', (req, res) => {
-  const { provider } = req.params;
-  const authUrl = `https://<HOSTED_UI_DOMAIN>/oauth2/authorize?identity_provider=${provider}&redirect_uri=<CALLBACK_URL>&response_type=code&client_id=<CLIENT_ID>&scope=email+openid+profile`;
-  res.redirect(authUrl);
-});
-
-// Handle callback
-app.get('/callback', async (req, res) => {
-  const { code } = req.query;
-
-  try {
-    // Exchange code for tokens
-    const tokenResponse = await axios.post(`https://<HOSTED_UI_DOMAIN>/oauth2/token`, {
-      grant_type: 'authorization_code',
-      client_id: '<CLIENT_ID>',
-      code: code,
-      redirect_uri: '<CALLBACK_URL>'
-    });
-
-    const { access_token, id_token } = tokenResponse.data;
-
-    // Verify and decode ID token
-    const decoded = jwt.decode(id_token, { complete: true });
-    const kid = decoded.header.kid;
-
-    const key = await client.getSigningKey(kid);
-    const signingKey = key.getPublicKey();
-
-    const verified = jwt.verify(id_token, signingKey);
-
-    console.log('User info:', verified);
-    console.log('Identity provider:', verified.identities);
-
-    res.redirect('/dashboard');
-  } catch (error) {
-    console.error('Authentication failed:', error);
-    res.redirect('/login');
-  }
-});
-```
-
-## User Attribute Mapping
-
-### Understanding Attribute Mapping
-
-Attribute mapping defines how user information from external providers maps to Cognito user attributes:
-
-```hcl
-# Example: Google to Cognito mapping
-google_attribute_mapping = {
-  email             = "email"           # Google email → Cognito email
-  family_name       = "family_name"     # Google family_name → Cognito family_name
-  given_name        = "given_name"      # Google given_name → Cognito given_name
-  name              = "name"            # Google name → Cognito name
-  picture           = "picture"         # Google picture → Cognito picture
-  preferred_username = "sub"            # Google sub → Cognito preferred_username
-  username          = "sub"             # Google sub → Cognito username (unique ID)
-}
-```
-
-### Custom Attributes
-
-You can also map to custom attributes:
-
-```hcl
-# Add custom attributes to the user pool
-schema = [
-  {
-    attribute_data_type = "String"
-    name               = "department"
-    mutable            = true
-    required           = false
-    string_attribute_constraints = {
-      max_length = "256"
-      min_length = "1"
-    }
-  }
-]
-
-# Map SAML attribute to custom attribute
-saml_attribute_mapping = {
-  "custom:department" = "http://schemas.company.com/identity/claims/department"
-}
-```
-
-## Security Considerations
-
-### 1. Provider Configuration Security
-- **Client Secrets**: Store securely, never commit to version control
-- **Callback URLs**: Use HTTPS in production, validate redirect URIs
-- **Scopes**: Request only necessary permissions from external providers
-
-### 2. Token Security
-- **JWT Verification**: Always verify JWT tokens using JWKS
-- **Token Storage**: Store tokens securely (HttpOnly cookies for web)
-- **Token Rotation**: Implement proper refresh token rotation
-
-### 3. User Data Privacy
-- **Attribute Mapping**: Only map necessary user attributes
-- **Data Retention**: Understand data retention policies of external providers
-- **Consent**: Ensure proper user consent for data sharing
-
-### 4. Provider-Specific Security
-
-#### Google
-- Enable 2FA on Google account used for OAuth setup
-- Regularly rotate client secrets
-- Monitor OAuth consent screen usage
-
-#### Facebook
-- Enable App Secret Proof for additional security
-- Regularly review app permissions
-- Monitor app usage in Facebook Analytics
-
-#### Apple
-- Securely store private key
-- Regularly rotate keys
-- Use team-managed certificates
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Invalid Redirect URI**
-   - Ensure callback URLs match exactly in both Cognito and external provider
-   - Check for trailing slashes and protocol (http vs https)
-
-2. **Attribute Mapping Errors**
-   - Verify external provider returns expected attributes
-   - Check attribute names match provider documentation
-
-3. **Provider Configuration Issues**
-   - Validate client IDs and secrets
-   - Ensure provider APIs are enabled
-   - Check provider-specific configuration requirements
-
-4. **Token Verification Failures**
-   - Verify JWKS URI is accessible
-   - Check token expiration times
-   - Validate issuer and audience claims
-
-### Debugging Tips
-
-1. **Check CloudWatch Logs**: Cognito logs authentication events
-2. **Use Browser Developer Tools**: Inspect OAuth flows and redirects
-3. **Test Provider APIs**: Verify external provider credentials work independently
-4. **Validate JWT Tokens**: Use jwt.io to decode and inspect tokens
-
-## Cost Considerations
-
-- **Free Tier**: 50,000 MAUs free (applies to all authentication methods)
-- **External Provider Costs**: Some providers may charge for API usage
-- **Advanced Security**: Additional charges when enabled in enforced mode
-
-## Next Steps
-
-Once you have federated authentication working, you might want to explore:
-
-1. **[Lambda Triggers Example](../lambda-triggers/)** - Add custom authentication logic
-2. **[Advanced Security](../advanced-security/)** - Add advanced security controls
-3. **[Hosted UI Example](../hosted-ui-app-client/)** - Add a hosted authentication UI
-
-## Cleanup
-
-To destroy the resources:
-
-```bash
-terraform destroy
-```
-
-**Note**: Remember to also clean up any external provider configurations (OAuth apps, etc.).
-
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.3 |
-| aws | >= 5.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| aws | >= 5.0 |
+No providers.
+
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_cognito_user_pool"></a> [cognito\_user\_pool](#module\_cognito\_user\_pool) | ../.. | n/a |
+
+## Resources
+
+No resources.
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_access_token_validity"></a> [access\_token\_validity](#input\_access\_token\_validity) | Time limit, in minutes, after which the access token is no longer valid | `number` | `60` | no |
+| <a name="input_allowed_oauth_flows"></a> [allowed\_oauth\_flows](#input\_allowed\_oauth\_flows) | List of allowed OAuth flows | `list(string)` | <pre>[<br/>  "code",<br/>  "implicit"<br/>]</pre> | no |
+| <a name="input_allowed_oauth_scopes"></a> [allowed\_oauth\_scopes](#input\_allowed\_oauth\_scopes) | List of allowed OAuth scopes | `list(string)` | <pre>[<br/>  "email",<br/>  "openid",<br/>  "profile",<br/>  "aws.cognito.signin.user.admin"<br/>]</pre> | no |
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region where resources will be created | `string` | `"us-east-1"` | no |
+| <a name="input_callback_urls"></a> [callback\_urls](#input\_callback\_urls) | List of allowed callback URLs for the app client | `list(string)` | <pre>[<br/>  "http://localhost:3000/callback"<br/>]</pre> | no |
+| <a name="input_create_hosted_ui_domain"></a> [create\_hosted\_ui\_domain](#input\_create\_hosted\_ui\_domain) | Whether to create a hosted UI domain | `bool` | `true` | no |
+| <a name="input_default_redirect_uri"></a> [default\_redirect\_uri](#input\_default\_redirect\_uri) | Default redirect URI for the app client | `string` | `"http://localhost:3000/callback"` | no |
+| <a name="input_enable_amazon_provider"></a> [enable\_amazon\_provider](#input\_enable\_amazon\_provider) | Whether to enable Amazon as an identity provider | `bool` | `false` | no |
+| <a name="input_enable_apple_provider"></a> [enable\_apple\_provider](#input\_enable\_apple\_provider) | Whether to enable Apple as an identity provider | `bool` | `false` | no |
+| <a name="input_enable_facebook_provider"></a> [enable\_facebook\_provider](#input\_enable\_facebook\_provider) | Whether to enable Facebook as an identity provider | `bool` | `false` | no |
+| <a name="input_enable_google_provider"></a> [enable\_google\_provider](#input\_enable\_google\_provider) | Whether to enable Google as an identity provider | `bool` | `false` | no |
+| <a name="input_enable_oidc_provider"></a> [enable\_oidc\_provider](#input\_enable\_oidc\_provider) | Whether to enable OIDC as an identity provider | `bool` | `false` | no |
+| <a name="input_enable_saml_provider"></a> [enable\_saml\_provider](#input\_enable\_saml\_provider) | Whether to enable SAML as an identity provider | `bool` | `false` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Environment name (e.g., dev, staging, prod) | `string` | `"dev"` | no |
+| <a name="input_explicit_auth_flows"></a> [explicit\_auth\_flows](#input\_explicit\_auth\_flows) | List of authentication flows | `list(string)` | <pre>[<br/>  "ALLOW_USER_SRP_AUTH",<br/>  "ALLOW_REFRESH_TOKEN_AUTH",<br/>  "ALLOW_USER_PASSWORD_AUTH"<br/>]</pre> | no |
+| <a name="input_generate_client_secret"></a> [generate\_client\_secret](#input\_generate\_client\_secret) | Whether to generate a client secret | `bool` | `false` | no |
+| <a name="input_hosted_ui_domain_prefix"></a> [hosted\_ui\_domain\_prefix](#input\_hosted\_ui\_domain\_prefix) | Domain prefix for the hosted UI (if null, will use project-environment-auth) | `string` | `null` | no |
+| <a name="input_id_token_validity"></a> [id\_token\_validity](#input\_id\_token\_validity) | Time limit, in minutes, after which the ID token is no longer valid | `number` | `60` | no |
+| <a name="input_identity_providers_config"></a> [identity\_providers\_config](#input\_identity\_providers\_config) | Configuration for optional identity providers | <pre>object({<br/>    google = optional(object({<br/>      enabled           = optional(bool, false)<br/>      client_id         = optional(string)<br/>      client_secret     = optional(string)<br/>      scopes            = optional(list(string), ["openid", "email", "profile"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    facebook = optional(object({<br/>      enabled           = optional(bool, false)<br/>      app_id            = optional(string)<br/>      app_secret        = optional(string)<br/>      scopes            = optional(list(string), ["public_profile", "email"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    apple = optional(object({<br/>      enabled           = optional(bool, false)<br/>      services_id       = optional(string)<br/>      team_id           = optional(string)<br/>      key_id            = optional(string)<br/>      private_key       = optional(string)<br/>      scopes            = optional(list(string), ["name", "email"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    amazon = optional(object({<br/>      enabled           = optional(bool, false)<br/>      client_id         = optional(string)<br/>      client_secret     = optional(string)<br/>      scopes            = optional(list(string), ["profile"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    saml = optional(object({<br/>      enabled           = optional(bool, false)<br/>      provider_name     = optional(string)<br/>      metadata_url      = optional(string)<br/>      attribute_mapping = optional(map(string), {})<br/>      idp_identifiers   = optional(list(string), [])<br/>    }), {})<br/><br/>    oidc = optional(object({<br/>      enabled           = optional(bool, false)<br/>      provider_name     = optional(string)<br/>      client_id         = optional(string)<br/>      client_secret     = optional(string)<br/>      issuer_url        = optional(string)<br/>      scopes            = optional(list(string), ["openid", "email", "profile"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/>  })</pre> | `{}` | no |
+| <a name="input_logout_urls"></a> [logout\_urls](#input\_logout\_urls) | List of allowed logout URLs for the app client | `list(string)` | <pre>[<br/>  "http://localhost:3000/logout"<br/>]</pre> | no |
+| <a name="input_mfa_configuration"></a> [mfa\_configuration](#input\_mfa\_configuration) | Multi-Factor Authentication (MFA) configuration | `string` | `"OPTIONAL"` | no |
+| <a name="input_oidc_provider_name"></a> [oidc\_provider\_name](#input\_oidc\_provider\_name) | Name for the OIDC identity provider | `string` | `"OIDC"` | no |
+| <a name="input_password_minimum_length"></a> [password\_minimum\_length](#input\_password\_minimum\_length) | Minimum length of the password policy | `number` | `8` | no |
+| <a name="input_password_require_lowercase"></a> [password\_require\_lowercase](#input\_password\_require\_lowercase) | Whether to require lowercase letters in password | `bool` | `true` | no |
+| <a name="input_password_require_numbers"></a> [password\_require\_numbers](#input\_password\_require\_numbers) | Whether to require numbers in password | `bool` | `true` | no |
+| <a name="input_password_require_symbols"></a> [password\_require\_symbols](#input\_password\_require\_symbols) | Whether to require symbols in password | `bool` | `true` | no |
+| <a name="input_password_require_uppercase"></a> [password\_require\_uppercase](#input\_password\_require\_uppercase) | Whether to require uppercase letters in password | `bool` | `true` | no |
+| <a name="input_project_name"></a> [project\_name](#input\_project\_name) | Name of the project | `string` | `"arc"` | no |
+| <a name="input_read_attributes"></a> [read\_attributes](#input\_read\_attributes) | List of user pool attributes the app client can read | `list(string)` | <pre>[<br/>  "email",<br/>  "email_verified",<br/>  "name",<br/>  "family_name",<br/>  "given_name",<br/>  "preferred_username",<br/>  "picture"<br/>]</pre> | no |
+| <a name="input_refresh_token_validity"></a> [refresh\_token\_validity](#input\_refresh\_token\_validity) | Time limit, in days, after which the refresh token is no longer valid | `number` | `30` | no |
+| <a name="input_saml_provider_name"></a> [saml\_provider\_name](#input\_saml\_provider\_name) | Name for the SAML identity provider | `string` | `"SAML"` | no |
+| <a name="input_temporary_password_validity_days"></a> [temporary\_password\_validity\_days](#input\_temporary\_password\_validity\_days) | Number of days a temporary password is valid | `number` | `7` | no |
+| <a name="input_user_pool_tier"></a> [user\_pool\_tier](#input\_user\_pool\_tier) | The user pool feature plan, or tier | `string` | `"PLUS"` | no |
+| <a name="input_write_attributes"></a> [write\_attributes](#input\_write\_attributes) | List of user pool attributes the app client can write | `list(string)` | <pre>[<br/>  "email",<br/>  "name",<br/>  "family_name",<br/>  "given_name",<br/>  "preferred_username",<br/>  "picture"<br/>]</pre> | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_amazon_login_url"></a> [amazon\_login\_url](#output\_amazon\_login\_url) | Direct login URL for Amazon provider |
+| <a name="output_apple_login_url"></a> [apple\_login\_url](#output\_apple\_login\_url) | Direct login URL for Apple provider |
+| <a name="output_enabled_providers"></a> [enabled\_providers](#output\_enabled\_providers) | Map of enabled identity providers and their status |
+| <a name="output_facebook_login_url"></a> [facebook\_login\_url](#output\_facebook\_login\_url) | Direct login URL for Facebook provider |
+| <a name="output_google_login_url"></a> [google\_login\_url](#output\_google\_login\_url) | Direct login URL for Google provider |
+| <a name="output_hosted_ui_domain"></a> [hosted\_ui\_domain](#output\_hosted\_ui\_domain) | The domain name for the hosted UI |
+| <a name="output_hosted_ui_url"></a> [hosted\_ui\_url](#output\_hosted\_ui\_url) | The URL of the hosted UI |
+| <a name="output_identity_provider_names"></a> [identity\_provider\_names](#output\_identity\_provider\_names) | The names of the configured identity providers |
+| <a name="output_login_url"></a> [login\_url](#output\_login\_url) | The login URL for the hosted UI |
+| <a name="output_logout_url"></a> [logout\_url](#output\_logout\_url) | The logout URL for the hosted UI |
+| <a name="output_oauth_configuration"></a> [oauth\_configuration](#output\_oauth\_configuration) | OAuth configuration details for client applications |
+| <a name="output_oidc_login_url"></a> [oidc\_login\_url](#output\_oidc\_login\_url) | Direct login URL for OIDC provider |
+| <a name="output_saml_login_url"></a> [saml\_login\_url](#output\_saml\_login\_url) | Direct login URL for SAML provider |
+| <a name="output_summary"></a> [summary](#output\_summary) | Summary of the created Cognito User Pool with federated identity providers |
+| <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | The ARN of the Cognito User Pool |
+| <a name="output_user_pool_client_id"></a> [user\_pool\_client\_id](#output\_user\_pool\_client\_id) | The ID of the Cognito User Pool Client |
+| <a name="output_user_pool_client_name"></a> [user\_pool\_client\_name](#output\_user\_pool\_client\_name) | The name of the Cognito User Pool Client |
+| <a name="output_user_pool_client_secret"></a> [user\_pool\_client\_secret](#output\_user\_pool\_client\_secret) | The client secret of the Cognito User Pool Client (if generated) |
+| <a name="output_user_pool_endpoint"></a> [user\_pool\_endpoint](#output\_user\_pool\_endpoint) | The endpoint name of the Cognito User Pool |
+| <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | The ID of the Cognito User Pool |
+| <a name="output_user_pool_issuer"></a> [user\_pool\_issuer](#output\_user\_pool\_issuer) | The issuer URL for the user pool |
+| <a name="output_user_pool_jwks_uri"></a> [user\_pool\_jwks\_uri](#output\_user\_pool\_jwks\_uri) | The JSON Web Key Set (JWKS) URI for the user pool |
+| <a name="output_user_pool_name"></a> [user\_pool\_name](#output\_user\_pool\_name) | The name of the Cognito User Pool |
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

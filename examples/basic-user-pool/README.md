@@ -18,26 +18,11 @@ This example demonstrates how to create a basic AWS Cognito User Pool with essen
 - **Account Recovery**: Users can recover their accounts via verified email
 - **Security Settings**: Basic security configuration with advanced security in audit mode
 
-## Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web Client    │───▶│  Cognito User    │───▶│   Your App      │
-│                 │    │      Pool        │    │                 │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │  Email Service   │
-                       │  (Verification)  │
-                       └──────────────────┘
-```
-
 ## Usage
 
 1. **Copy the example configuration**:
    ```bash
-   cp terraform.tfvars.example terraform.tfvars
+   vi terraform.tfvars
    ```
 
 2. **Edit the variables** in `terraform.tfvars`:
@@ -49,9 +34,6 @@ This example demonstrates how to create a basic AWS Cognito User Pool with essen
    # Customize password policy
    password_minimum_length = 8
    password_require_symbols = true
-
-   # Security settings
-   advanced_security_mode = "AUDIT"
    ```
 
 3. **Initialize and apply**:
@@ -61,174 +43,68 @@ This example demonstrates how to create a basic AWS Cognito User Pool with essen
    terraform apply
    ```
 
-## Configuration Options
-
-### Password Policy
-
-You can customize the password requirements:
-
-```hcl
-password_minimum_length         = 12
-password_require_lowercase      = true
-password_require_numbers        = true
-password_require_symbols        = true
-password_require_uppercase      = true
-temporary_password_validity_days = 7
-```
-
-### Security Settings
-
-Configure security features:
-
-```hcl
-# Advanced security mode
-advanced_security_mode = "AUDIT"  # or "ENFORCED" or "OFF"
-
-# Multi-factor authentication
-mfa_configuration = "OFF"  # or "OPTIONAL" or "ON"
-
-# Admin-only user creation
-allow_admin_create_user_only = false
-```
-
-## Testing the User Pool
-
-After deployment, you can test the user pool using the AWS CLI:
-
-1. **Sign up a new user**:
-   ```bash
-   aws cognito-idp sign-up \
-     --client-id <CLIENT_ID> \
-     --username user@example.com \
-     --password TempPassword123! \
-     --user-attributes Name=email,Value=user@example.com
-   ```
-
-2. **Confirm the user** (using the verification code from email):
-   ```bash
-   aws cognito-idp confirm-sign-up \
-     --client-id <CLIENT_ID> \
-     --username user@example.com \
-     --confirmation-code <CODE>
-   ```
-
-3. **Authenticate the user**:
-   ```bash
-   aws cognito-idp initiate-auth \
-     --client-id <CLIENT_ID> \
-     --auth-flow USER_SRP_AUTH \
-     --auth-parameters USERNAME=user@example.com,SRP_A=<SRP_A>
-   ```
-
-## Integration with Applications
-
-### Web Applications
-
-Use the Cognito JavaScript SDK:
-
-```javascript
-import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
-
-const poolData = {
-  UserPoolId: '<USER_POOL_ID>',
-  ClientId: '<CLIENT_ID>'
-};
-
-const userPool = new CognitoUserPool(poolData);
-
-// Sign up
-userPool.signUp(username, password, attributeList, null, callback);
-
-// Sign in
-const authenticationDetails = new AuthenticationDetails({
-  Username: username,
-  Password: password
-});
-
-const cognitoUser = new CognitoUser({
-  Username: username,
-  Pool: userPool
-});
-
-cognitoUser.authenticateUser(authenticationDetails, callbacks);
-```
-
-### Mobile Applications
-
-Use the AWS Amplify SDK:
-
-```javascript
-import { Auth } from 'aws-amplify';
-
-// Configure Amplify
-Auth.configure({
-  region: '<AWS_REGION>',
-  userPoolId: '<USER_POOL_ID>',
-  userPoolWebClientId: '<CLIENT_ID>'
-});
-
-// Sign up
-await Auth.signUp({
-  username: 'user@example.com',
-  password: 'TempPassword123!',
-  attributes: {
-    email: 'user@example.com'
-  }
-});
-
-// Sign in
-await Auth.signIn('user@example.com', 'TempPassword123!');
-```
-
-## Outputs
-
-This example provides the following outputs:
-
-- `user_pool_id`: The ID of the created user pool
-- `user_pool_arn`: The ARN of the user pool
-- `user_pool_client_id`: The ID of the web client
-- `user_pool_jwks_uri`: The JWKS URI for token verification
-- `user_pool_issuer`: The issuer URL for JWT tokens
-
-## Security Considerations
-
-1. **Password Policy**: The default password policy requires 8+ characters with mixed case, numbers, and symbols
-2. **Email Verification**: Users must verify their email before they can sign in
-3. **Advanced Security**: Enabled in audit mode to monitor suspicious activities
-4. **Account Recovery**: Only verified email addresses can be used for account recovery
-
-## Cost Considerations
-
-- **Free Tier**: AWS Cognito provides 50,000 MAUs (Monthly Active Users) free
-- **Beyond Free Tier**: $0.0055 per MAU for the first 50,000 MAUs
-- **Advanced Security**: Additional charges apply when enabled in enforced mode
-
-## Next Steps
-
-Once you have the basic user pool working, you might want to explore:
-
-1. **[Hosted UI Example](../hosted-ui-app-client/)** - Add a hosted authentication UI
-2. **[Federated Identity Provider Example](../federated-identity-provider/)** - Add external Identity providers for login
-3. **[Lambda Triggers Example](../lambda-triggers/)** - Add custom authentication logic
-4. **[Advanced Security Example](../advanced-security/)** - Add advanced security controls
-
-## Cleanup
-
-To destroy the resources:
-
-```bash
-terraform destroy
-```
-
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.3 |
-| aws | >= 5.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| aws | >= 5.0 |
+No providers.
+
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_cognito_user_pool"></a> [cognito\_user\_pool](#module\_cognito\_user\_pool) | ../../ | n/a |
+| <a name="module_tags"></a> [tags](#module\_tags) | sourcefuse/arc-tags/aws | 1.2.2 |
+
+## Resources
+
+No resources.
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_allow_admin_create_user_only"></a> [allow\_admin\_create\_user\_only](#input\_allow\_admin\_create\_user\_only) | Set to true if only the administrator is allowed to create user profiles | `bool` | `false` | no |
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region where resources will be created | `string` | `"us-east-1"` | no |
+| <a name="input_challenge_required_on_new_device"></a> [challenge\_required\_on\_new\_device](#input\_challenge\_required\_on\_new\_device) | Whether to challenge users on new devices | `bool` | `false` | no |
+| <a name="input_create_user_pool_groups"></a> [create\_user\_pool\_groups](#input\_create\_user\_pool\_groups) | Whether to create user pool groups | `bool` | `false` | no |
+| <a name="input_create_user_pool_users"></a> [create\_user\_pool\_users](#input\_create\_user\_pool\_users) | Whether to create user pool users | `bool` | `false` | no |
+| <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | When active, DeletionProtection prevents accidental deletion of your user pool | `string` | `"INACTIVE"` | no |
+| <a name="input_device_only_remembered_on_user_prompt"></a> [device\_only\_remembered\_on\_user\_prompt](#input\_device\_only\_remembered\_on\_user\_prompt) | Whether devices are only remembered when user chooses to remember | `bool` | `true` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Environment name (e.g., dev, staging, prod) | `string` | `"dev"` | no |
+| <a name="input_mfa_configuration"></a> [mfa\_configuration](#input\_mfa\_configuration) | Multi-Factor Authentication (MFA) configuration | `string` | `"OFF"` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace for the resources | `string` | `"arc"` | no |
+| <a name="input_password_minimum_length"></a> [password\_minimum\_length](#input\_password\_minimum\_length) | Minimum length of the password policy | `number` | `8` | no |
+| <a name="input_password_require_lowercase"></a> [password\_require\_lowercase](#input\_password\_require\_lowercase) | Whether to require lowercase letters in password | `bool` | `true` | no |
+| <a name="input_password_require_numbers"></a> [password\_require\_numbers](#input\_password\_require\_numbers) | Whether to require numbers in password | `bool` | `true` | no |
+| <a name="input_password_require_symbols"></a> [password\_require\_symbols](#input\_password\_require\_symbols) | Whether to require symbols in password | `bool` | `true` | no |
+| <a name="input_password_require_uppercase"></a> [password\_require\_uppercase](#input\_password\_require\_uppercase) | Whether to require uppercase letters in password | `bool` | `true` | no |
+| <a name="input_project_name"></a> [project\_name](#input\_project\_name) | Name of the project | `string` | `"cognito-auth"` | no |
+| <a name="input_software_token_mfa_configuration"></a> [software\_token\_mfa\_configuration](#input\_software\_token\_mfa\_configuration) | Configuration for software token Multi-Factor Authentication (MFA) settings. Set to null to omit. | <pre>object({<br/>    enabled = bool<br/>  })</pre> | `null` | no |
+| <a name="input_temporary_password_validity_days"></a> [temporary\_password\_validity\_days](#input\_temporary\_password\_validity\_days) | Number of days a temporary password is valid | `number` | `7` | no |
+| <a name="input_user_group_memberships"></a> [user\_group\_memberships](#input\_user\_group\_memberships) | List of user-to-group memberships | <pre>list(object({<br/>    user  = string<br/>    group = string<br/>  }))</pre> | `[]` | no |
+| <a name="input_user_pool_clients"></a> [user\_pool\_clients](#input\_user\_pool\_clients) | List of user pool clients to create | <pre>list(object({<br/>    name                   = string<br/>    access_token_validity  = optional(number, 60)<br/>    id_token_validity      = optional(number, 60)<br/>    refresh_token_validity = optional(number, 30)<br/>    token_validity_units = optional(object({<br/>      access_token  = optional(string, "minutes")<br/>      id_token      = optional(string, "minutes")<br/>      refresh_token = optional(string, "days")<br/>    }), {})<br/>    allowed_oauth_flows                           = optional(list(string), [])<br/>    allowed_oauth_flows_user_pool_client          = optional(bool, false)<br/>    allowed_oauth_scopes                          = optional(list(string), [])<br/>    callback_urls                                 = optional(list(string), [])<br/>    default_redirect_uri                          = optional(string)<br/>    explicit_auth_flows                           = optional(list(string), ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"])<br/>    generate_secret                               = optional(bool, false)<br/>    logout_urls                                   = optional(list(string), [])<br/>    prevent_user_existence_errors                 = optional(string, "ENABLED")<br/>    read_attributes                               = optional(list(string), [])<br/>    supported_identity_providers                  = optional(list(string), ["GOOGLE"])<br/>    write_attributes                              = optional(list(string), [])<br/>    enable_token_revocation                       = optional(bool, true)<br/>    enable_propagate_additional_user_context_data = optional(bool, false)<br/>    auth_session_validity                         = optional(number, 3)<br/>  }))</pre> | `[]` | no |
+| <a name="input_user_pool_groups"></a> [user\_pool\_groups](#input\_user\_pool\_groups) | List of Cognito groups to create | <pre>list(object({<br/>    name        = string<br/>    description = optional(string, null)<br/>    precedence  = optional(number, null)<br/>    role_arn    = optional(string, null)<br/>  }))</pre> | `[]` | no |
+| <a name="input_user_pool_tier"></a> [user\_pool\_tier](#input\_user\_pool\_tier) | The user pool feature plan, or tier | `string` | `"ESSENTIALS"` | no |
+| <a name="input_user_pool_users"></a> [user\_pool\_users](#input\_user\_pool\_users) | List of Cognito users to create | <pre>list(object({<br/>    username = string<br/>    email    = string<br/>    password = string<br/>  }))</pre> | `[]` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_summary"></a> [summary](#output\_summary) | Summary of the created Cognito User Pool |
+| <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | The ARN of the Cognito User Pool |
+| <a name="output_user_pool_client_id"></a> [user\_pool\_client\_id](#output\_user\_pool\_client\_id) | The ID of the Cognito User Pool Client |
+| <a name="output_user_pool_client_name"></a> [user\_pool\_client\_name](#output\_user\_pool\_client\_name) | The name of the Cognito User Pool Client |
+| <a name="output_user_pool_endpoint"></a> [user\_pool\_endpoint](#output\_user\_pool\_endpoint) | The endpoint name of the Cognito User Pool |
+| <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | The ID of the Cognito User Pool |
+| <a name="output_user_pool_issuer"></a> [user\_pool\_issuer](#output\_user\_pool\_issuer) | The issuer URL for the user pool |
+| <a name="output_user_pool_jwks_uri"></a> [user\_pool\_jwks\_uri](#output\_user\_pool\_jwks\_uri) | The JSON Web Key Set (JWKS) URI for the user pool |
+| <a name="output_user_pool_name"></a> [user\_pool\_name](#output\_user\_pool\_name) | The name of the Cognito User Pool |
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
