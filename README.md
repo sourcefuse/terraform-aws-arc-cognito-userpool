@@ -2,7 +2,10 @@
 ## [terraform-aws-arc-cognito-userpool](https://github.com/sourcefuse/terraform-aws-arc-cognito-userpool)
 ![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
-[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=sourcefuse_terraform-aws-arc-cognito-userpool&token=3c75a1b94d1b6ab3f1b98785e484d5ede197851e)](https://sonarcloud.io/summary/new_code?id=sourcefuse_terraform-aws-arc-cognito-userpool)
+
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=sourcefuse_terraform-aws-arc-cognito-userpool&token=e28bfe630069bd645a51dee7e25cf3c7e522e9fd)](https://sonarcloud.io/summary/new_code?id=sourcefuse_terraform-aws-arc-cognito-userpool)
+
+
 
 ## Overview
 SourceFuse AWS Reference Architecture (ARC) Terraform module for managing the cognito userpool module.
