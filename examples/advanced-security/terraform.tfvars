@@ -46,9 +46,9 @@ risk_exception_configuration = {
 }
 
 cognito_log_delivery_config = {
-  event_source         = "userNotification"
+  event_source         = "userAuthEvents"
   log_destination_type = "cloudwatch"
-  log_level            = "ERROR"
+  log_level            = "INFO"
   log_group_name       = "arc-poc-cognito-logsv2"
 }
 

@@ -19,10 +19,7 @@ SourceFuse AWS Reference Architecture (ARC) Terraform module for managing the co
 - **Custom Domains**: Support for custom domains with SSL certificates.
 - **User Pool Groups**: Role-based access control with user groups.
 - **Resource Servers**: OAuth 2.0 resource server configuration.
- - **Conditional Resource Creation**: Create only the resources you need.
- - **Comprehensive Validation**: Input validation for all variables.
- - **SourceFuse ARC Integration**: Compatible with SourceFuse ARC tags module.
- - **Flexible Tagging**: Support for custom tags via tags variable.
+
  ## Usage
  To see a full example, check out the [main.tf](https://github.com/sourcefuse/terraform-aws-arc-cognito-userpool/blob/main/examples/basic-user-pool/main.tf) file in the example folder.
 
@@ -57,13 +54,16 @@ module "arc-cognito-userpool" {
 
 ## Modules
 
-No modules.
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_s3"></a> [s3](#module\_s3) | sourcefuse/arc-s3/aws | 0.0.5 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
 | [aws_cloudwatch_log_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
+| [aws_cloudwatch_log_resource_policy.cognito](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_resource_policy) | resource |
 | [aws_cognito_identity_provider.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_identity_provider) | resource |
 | [aws_cognito_log_delivery_configuration.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_log_delivery_configuration) | resource |
 | [aws_cognito_resource_server.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_resource_server) | resource |
@@ -77,7 +77,6 @@ No modules.
 | [aws_cognito_user_pool_domain.hosted_ui](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_domain) | resource |
 | [aws_cognito_user_pool_domain.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_domain) | resource |
 | [aws_cognito_user_pool_ui_customization.hosted_ui](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_ui_customization) | resource |
-| [aws_s3_bucket.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_wafv2_web_acl_association.cognito_waf](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/wafv2_web_acl_association) | resource |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
@@ -90,7 +89,7 @@ No modules.
 | <a name="input_admin_create_user_config"></a> [admin\_create\_user\_config](#input\_admin\_create\_user\_config) | Configuration for creating a new user profile | <pre>object({<br/>    allow_admin_create_user_only = optional(bool, false)<br/>    invite_message_template = optional(object({<br/>      email_message = optional(string)<br/>      email_subject = optional(string)<br/>      sms_message   = optional(string)<br/>    }), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_alias_attributes"></a> [alias\_attributes](#input\_alias\_attributes) | Attributes supported as an alias for this user pool. Valid values: phone\_number, email, or preferred\_username | `list(string)` | `[]` | no |
 | <a name="input_auto_verified_attributes"></a> [auto\_verified\_attributes](#input\_auto\_verified\_attributes) | Attributes to be auto-verified. Valid values: email, phone\_number | `list(string)` | `[]` | no |
-| <a name="input_cognito_log_delivery_config"></a> [cognito\_log\_delivery\_config](#input\_cognito\_log\_delivery\_config) | n/a | <pre>object({<br/>    event_source         = string # e.g. "userAuthEvents" or "userNotification"<br/>    log_level            = string # "ERROR" or "INFO"<br/>    log_destination_type = string # "cloudwatch", "s3", "firehose"<br/><br/>    # Optional overrides<br/>    log_group_name      = optional(string) # for CW logs<br/>    s3_bucket_name      = optional(string) # for S3<br/>    firehose_stream_arn = optional(string) # for Firehose<br/>  })</pre> | `null` | no |
+| <a name="input_cognito_log_delivery_config"></a> [cognito\_log\_delivery\_config](#input\_cognito\_log\_delivery\_config) | ============================================================================== VARIABLES - LOG STREAMING ============================================================================== | <pre>object({<br/>    event_source         = string # e.g. "userAuthEvents" or "userNotification"<br/>    log_level            = string # "ERROR" or "INFO"<br/>    log_destination_type = string # "cloudwatch", "s3", "firehose"<br/><br/>    # Optional overrides<br/>    log_group_name      = optional(string) # for CW logs<br/>    s3_bucket_name      = optional(string) # for S3<br/>    firehose_stream_arn = optional(string) # for Firehose<br/>  })</pre> | `null` | no |
 | <a name="input_compromised_credentials_risk_configuration"></a> [compromised\_credentials\_risk\_configuration](#input\_compromised\_credentials\_risk\_configuration) | n/a | <pre>object({<br/>    event_filter = optional(list(string))<br/>    actions = object({<br/>      event_action = string<br/>    })<br/>  })</pre> | `null` | no |
 | <a name="input_create_resource_servers"></a> [create\_resource\_servers](#input\_create\_resource\_servers) | Whether to create resource servers | `bool` | `false` | no |
 | <a name="input_create_user_pool_clients"></a> [create\_user\_pool\_clients](#input\_create\_user\_pool\_clients) | Whether to create user pool clients | `bool` | `true` | no |

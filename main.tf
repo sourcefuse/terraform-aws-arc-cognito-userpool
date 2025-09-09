@@ -460,7 +460,7 @@ resource "aws_cognito_log_delivery_configuration" "this" {
     dynamic "s3_configuration" {
       for_each = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "s3" ? [1] : []
       content {
-        bucket_arn = aws_s3_bucket.this["create"].arn
+        bucket_arn = module.s3["create"].bucket_arn
       }
     }
 
@@ -479,11 +479,34 @@ resource "aws_cloudwatch_log_group" "this" {
   retention_in_days = 30
 }
 
-resource "aws_s3_bucket" "this" {
-  for_each = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "s3" ? { create = true } : {}
+resource "aws_cloudwatch_log_resource_policy" "cognito" {
+  count       = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "cloudwatch" ? 1 : 0
+  policy_name = "CognitoLogDelivery"
+  policy_document = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "cognito-idp.amazonaws.com"
+        }
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "${aws_cloudwatch_log_group.this[0].arn}:*"
+      }
+    ]
+  })
+}
 
-  bucket        = var.cognito_log_delivery_config.s3_bucket_name
+module "s3" {
+  source        = "sourcefuse/arc-s3/aws"
+  version       = "0.0.5"
+  for_each      = var.cognito_log_delivery_config != null && var.cognito_log_delivery_config.log_destination_type == "s3" ? { create = true } : {}
+  name          = "${var.name}-logs"
   force_destroy = true
+  tags          = var.tags
 }
 
 # ==============================================================================
