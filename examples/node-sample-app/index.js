@@ -3,6 +3,7 @@ const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
+app.disable("x-powered-by");
 const port = 3000;
 
 const {
