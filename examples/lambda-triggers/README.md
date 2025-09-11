@@ -75,13 +75,13 @@ aws cognito-idp sign-up \
 aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/arc-dev"
 ```
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0, < 7.0 |
 
 ## Providers
 
@@ -121,9 +121,8 @@ No resources.
 | <a name="output_post_confirmation_lambda_arn"></a> [post\_confirmation\_lambda\_arn](#output\_post\_confirmation\_lambda\_arn) | ARN of the post confirmation Lambda function |
 | <a name="output_pre_authentication_lambda_arn"></a> [pre\_authentication\_lambda\_arn](#output\_pre\_authentication\_lambda\_arn) | ARN of the pre authentication Lambda function |
 | <a name="output_pre_sign_up_lambda_arn"></a> [pre\_sign\_up\_lambda\_arn](#output\_pre\_sign\_up\_lambda\_arn) | ARN of the pre sign-up Lambda function |
-| <a name="output_summary"></a> [summary](#output\_summary) | Summary of the Lambda triggers setup |
 | <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | The ARN of the Cognito User Pool |
 | <a name="output_user_pool_client_id"></a> [user\_pool\_client\_id](#output\_user\_pool\_client\_id) | The ID of the Cognito User Pool Client |
 | <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | The ID of the Cognito User Pool |
 | <a name="output_user_pool_name"></a> [user\_pool\_name](#output\_user\_pool\_name) | The name of the Cognito User Pool |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

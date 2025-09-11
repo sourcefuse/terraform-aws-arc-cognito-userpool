@@ -42,7 +42,7 @@ user_pool_users = [
   {
     username = "bob@example.com"
     email    = "bob@example.com"
-    password = "TempPassw0rd!"
+    password = "TempPassw0rd!" #Todo: to pass password securely
   }
 ]
 

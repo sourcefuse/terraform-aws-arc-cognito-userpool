@@ -112,22 +112,3 @@ output "oauth_configuration" {
   }
   sensitive = true
 }
-
-# ==============================================================================
-# SUMMARY OUTPUT
-# ==============================================================================
-
-output "summary" {
-  description = "Summary of the created Cognito User Pool with Hosted UI"
-  value = {
-    user_pool_id     = module.cognito_user_pool.user_pool_id
-    user_pool_name   = module.cognito_user_pool.user_pool_name
-    client_id        = length(module.cognito_user_pool.user_pool_client_ids) > 0 ? module.cognito_user_pool.user_pool_client_ids[0] : null
-    hosted_ui_domain = module.cognito_user_pool.user_pool_domain_name
-    hosted_ui_url    = module.cognito_user_pool.user_pool_hosted_ui_url
-    region           = var.aws_region
-    environment      = var.environment
-    project          = var.project_name
-    mfa_enabled      = var.mfa_configuration != "OFF"
-  }
-}

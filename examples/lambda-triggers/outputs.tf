@@ -46,18 +46,3 @@ output "enabled_triggers" {
     pre_authentication = var.enable_pre_authentication_trigger
   }
 }
-
-output "summary" {
-  description = "Summary of the Lambda triggers setup"
-  value = {
-    user_pool_id             = module.cognito_user_pool.user_pool_id
-    user_pool_name           = module.cognito_user_pool.user_pool_name
-    client_id                = module.cognito_user_pool.user_pool_client_ids[0]
-    lambda_functions_created = local.create_lambda_functions ? 1 : 0
-    enabled_triggers = {
-      pre_sign_up        = var.enable_pre_sign_up_trigger
-      post_confirmation  = var.enable_post_confirmation_trigger
-      pre_authentication = var.enable_pre_authentication_trigger
-    }
-  }
-}

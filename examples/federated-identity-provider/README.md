@@ -123,13 +123,13 @@ First, set up your identity providers:
    - Facebook: Add the same URL to Valid OAuth Redirect URIs
    - Apple: Configure the same URL in your Services ID
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0, < 7.0 |
 
 ## Providers
 
@@ -201,7 +201,6 @@ No resources.
 | <a name="output_oauth_configuration"></a> [oauth\_configuration](#output\_oauth\_configuration) | OAuth configuration details for client applications |
 | <a name="output_oidc_login_url"></a> [oidc\_login\_url](#output\_oidc\_login\_url) | Direct login URL for OIDC provider |
 | <a name="output_saml_login_url"></a> [saml\_login\_url](#output\_saml\_login\_url) | Direct login URL for SAML provider |
-| <a name="output_summary"></a> [summary](#output\_summary) | Summary of the created Cognito User Pool with federated identity providers |
 | <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | The ARN of the Cognito User Pool |
 | <a name="output_user_pool_client_id"></a> [user\_pool\_client\_id](#output\_user\_pool\_client\_id) | The ID of the Cognito User Pool Client |
 | <a name="output_user_pool_client_name"></a> [user\_pool\_client\_name](#output\_user\_pool\_client\_name) | The name of the Cognito User Pool Client |
@@ -211,4 +210,4 @@ No resources.
 | <a name="output_user_pool_issuer"></a> [user\_pool\_issuer](#output\_user\_pool\_issuer) | The issuer URL for the user pool |
 | <a name="output_user_pool_jwks_uri"></a> [user\_pool\_jwks\_uri](#output\_user\_pool\_jwks\_uri) | The JSON Web Key Set (JWKS) URI for the user pool |
 | <a name="output_user_pool_name"></a> [user\_pool\_name](#output\_user\_pool\_name) | The name of the Cognito User Pool |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

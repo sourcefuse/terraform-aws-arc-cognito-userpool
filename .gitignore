@@ -5,3 +5,4 @@ terraform.tfstate
 .idea
 .external_momdules
 *.zip
+node_modules/

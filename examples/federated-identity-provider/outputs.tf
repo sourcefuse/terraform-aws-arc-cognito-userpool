@@ -206,30 +206,3 @@ output "oauth_configuration" {
   }
   sensitive = true
 }
-
-# ==============================================================================
-# SUMMARY OUTPUT
-# ==============================================================================
-
-output "summary" {
-  description = "Summary of the created Cognito User Pool with federated identity providers"
-  value = {
-    user_pool_id     = module.cognito_user_pool.user_pool_id
-    user_pool_name   = module.cognito_user_pool.user_pool_name
-    client_id        = length(module.cognito_user_pool.user_pool_client_ids) > 0 ? module.cognito_user_pool.user_pool_client_ids[0] : null
-    hosted_ui_domain = module.cognito_user_pool.user_pool_domain_name
-    hosted_ui_url    = module.cognito_user_pool.user_pool_hosted_ui_url
-    region           = var.aws_region
-    environment      = var.environment
-    project          = var.project_name
-    mfa_enabled      = var.mfa_configuration != "OFF"
-    enabled_providers = {
-      google   = var.enable_google_provider
-      facebook = var.enable_facebook_provider
-      apple    = var.enable_apple_provider
-      amazon   = var.enable_amazon_provider
-      saml     = var.enable_saml_provider
-      oidc     = var.enable_oidc_provider
-    }
-  }
-}
