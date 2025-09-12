@@ -527,19 +527,30 @@ variable "identity_providers_config" {
   description = "Configuration for optional identity providers"
   type = object({
     google = optional(object({
-      enabled           = optional(bool, false)
-      client_id         = optional(string)
-      client_secret     = optional(string)
-      scopes            = optional(list(string), ["openid", "email", "profile"])
-      attribute_mapping = optional(map(string), {})
+      enabled                       = optional(bool, false)
+      client_id                     = optional(string)
+      client_secret                 = optional(string)
+      scopes                        = optional(list(string), ["openid", "email", "profile"])
+      attribute_mapping             = optional(map(string), {})
+      authorize_url                 = optional(string, "https://accounts.google.com/o/oauth2/v2/auth")
+      token_url                     = optional(string, "https://www.googleapis.com/oauth2/v4/token")
+      attributes_url                = optional(string, "https://people.googleapis.com/v1/people/me?personFields=")
+      attributes_url_add_attributes = optional(string, "true")
+      oidc_issuer                   = optional(string, "https://accounts.google.com")
+      token_request_method          = optional(string, "POST")
     }), {})
 
     facebook = optional(object({
-      enabled           = optional(bool, false)
-      app_id            = optional(string)
-      app_secret        = optional(string)
-      scopes            = optional(list(string), ["public_profile", "email"])
-      attribute_mapping = optional(map(string), {})
+      enabled                       = optional(bool, false)
+      app_id                        = optional(string)
+      app_secret                    = optional(string)
+      scopes                        = optional(list(string), ["public_profile", "email"])
+      attribute_mapping             = optional(map(string), {})
+      authorize_url                 = optional(string, "https://www.facebook.com/v17.0/dialog/oauth")
+      token_url                     = optional(string, "https://graph.facebook.com/v17.0/oauth/access_token")
+      attributes_url                = optional(string, "https://graph.facebook.com/v17.0/me?fields=")
+      attributes_url_add_attributes = optional(string, "true")
+      token_request_method          = optional(string, "GET")
     }), {})
 
     apple = optional(object({
@@ -581,6 +592,7 @@ variable "identity_providers_config" {
 
   default = {}
 }
+
 
 # ==============================================================================
 # OPTIONAL VARIABLES - USER POOL USERS

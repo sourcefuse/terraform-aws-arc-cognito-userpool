@@ -1,5 +1,5 @@
 # ==============================================================================
-# LAMBDA TRIGGERS EXAMPLE OUTPUTS
+# COGNITO USER POOL OUTPUTS (WITH THREAT DETECTION)
 # ==============================================================================
 
 output "user_pool_id" {
@@ -22,27 +22,17 @@ output "user_pool_client_id" {
   value       = module.cognito_user_pool.user_pool_client_ids[0]
 }
 
-# Lambda function outputs (referencing child modules instead of aws_lambda_function directly)
-output "pre_sign_up_lambda_arn" {
-  description = "ARN of the pre sign-up Lambda function"
-  value       = var.enable_pre_sign_up_trigger ? module.pre_sign_up_lambda[0].arn : null
+output "user_pool_endpoint" {
+  description = "The endpoint name of the Cognito User Pool"
+  value       = module.cognito_user_pool.user_pool_endpoint
 }
 
-output "post_confirmation_lambda_arn" {
-  description = "ARN of the post confirmation Lambda function"
-  value       = var.enable_post_confirmation_trigger ? module.post_confirmation_lambda[0].arn : null
+output "user_pool_issuer" {
+  description = "The issuer URL for JWT tokens"
+  value       = module.cognito_user_pool.user_pool_issuer
 }
 
-output "pre_authentication_lambda_arn" {
-  description = "ARN of the pre authentication Lambda function"
-  value       = var.enable_pre_authentication_trigger ? module.pre_authentication_lambda[0].arn : null
-}
-
-output "enabled_triggers" {
-  description = "List of enabled Lambda triggers"
-  value = {
-    pre_sign_up        = var.enable_pre_sign_up_trigger
-    post_confirmation  = var.enable_post_confirmation_trigger
-    pre_authentication = var.enable_pre_authentication_trigger
-  }
+output "user_pool_jwks_uri" {
+  description = "The JWKS URI for JWT token validation"
+  value       = module.cognito_user_pool.user_pool_jwks_uri
 }

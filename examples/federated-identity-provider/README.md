@@ -156,12 +156,6 @@ No resources.
 | <a name="input_callback_urls"></a> [callback\_urls](#input\_callback\_urls) | List of allowed callback URLs for the app client | `list(string)` | <pre>[<br/>  "http://localhost:3000/callback"<br/>]</pre> | no |
 | <a name="input_create_hosted_ui_domain"></a> [create\_hosted\_ui\_domain](#input\_create\_hosted\_ui\_domain) | Whether to create a hosted UI domain | `bool` | `true` | no |
 | <a name="input_default_redirect_uri"></a> [default\_redirect\_uri](#input\_default\_redirect\_uri) | Default redirect URI for the app client | `string` | `"http://localhost:3000/callback"` | no |
-| <a name="input_enable_amazon_provider"></a> [enable\_amazon\_provider](#input\_enable\_amazon\_provider) | Whether to enable Amazon as an identity provider | `bool` | `false` | no |
-| <a name="input_enable_apple_provider"></a> [enable\_apple\_provider](#input\_enable\_apple\_provider) | Whether to enable Apple as an identity provider | `bool` | `false` | no |
-| <a name="input_enable_facebook_provider"></a> [enable\_facebook\_provider](#input\_enable\_facebook\_provider) | Whether to enable Facebook as an identity provider | `bool` | `false` | no |
-| <a name="input_enable_google_provider"></a> [enable\_google\_provider](#input\_enable\_google\_provider) | Whether to enable Google as an identity provider | `bool` | `false` | no |
-| <a name="input_enable_oidc_provider"></a> [enable\_oidc\_provider](#input\_enable\_oidc\_provider) | Whether to enable OIDC as an identity provider | `bool` | `false` | no |
-| <a name="input_enable_saml_provider"></a> [enable\_saml\_provider](#input\_enable\_saml\_provider) | Whether to enable SAML as an identity provider | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name (e.g., dev, staging, prod) | `string` | `"dev"` | no |
 | <a name="input_explicit_auth_flows"></a> [explicit\_auth\_flows](#input\_explicit\_auth\_flows) | List of authentication flows | `list(string)` | <pre>[<br/>  "ALLOW_USER_SRP_AUTH",<br/>  "ALLOW_REFRESH_TOKEN_AUTH",<br/>  "ALLOW_USER_PASSWORD_AUTH"<br/>]</pre> | no |
 | <a name="input_generate_client_secret"></a> [generate\_client\_secret](#input\_generate\_client\_secret) | Whether to generate a client secret | `bool` | `false` | no |
@@ -170,7 +164,6 @@ No resources.
 | <a name="input_identity_providers_config"></a> [identity\_providers\_config](#input\_identity\_providers\_config) | Configuration for optional identity providers | <pre>object({<br/>    google = optional(object({<br/>      enabled           = optional(bool, false)<br/>      client_id         = optional(string)<br/>      client_secret     = optional(string)<br/>      scopes            = optional(list(string), ["openid", "email", "profile"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    facebook = optional(object({<br/>      enabled           = optional(bool, false)<br/>      app_id            = optional(string)<br/>      app_secret        = optional(string)<br/>      scopes            = optional(list(string), ["public_profile", "email"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    apple = optional(object({<br/>      enabled           = optional(bool, false)<br/>      services_id       = optional(string)<br/>      team_id           = optional(string)<br/>      key_id            = optional(string)<br/>      private_key       = optional(string)<br/>      scopes            = optional(list(string), ["name", "email"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    amazon = optional(object({<br/>      enabled           = optional(bool, false)<br/>      client_id         = optional(string)<br/>      client_secret     = optional(string)<br/>      scopes            = optional(list(string), ["profile"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/><br/>    saml = optional(object({<br/>      enabled           = optional(bool, false)<br/>      provider_name     = optional(string)<br/>      metadata_url      = optional(string)<br/>      attribute_mapping = optional(map(string), {})<br/>      idp_identifiers   = optional(list(string), [])<br/>    }), {})<br/><br/>    oidc = optional(object({<br/>      enabled           = optional(bool, false)<br/>      provider_name     = optional(string)<br/>      client_id         = optional(string)<br/>      client_secret     = optional(string)<br/>      issuer_url        = optional(string)<br/>      scopes            = optional(list(string), ["openid", "email", "profile"])<br/>      attribute_mapping = optional(map(string), {})<br/>    }), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_logout_urls"></a> [logout\_urls](#input\_logout\_urls) | List of allowed logout URLs for the app client | `list(string)` | <pre>[<br/>  "http://localhost:3000/logout"<br/>]</pre> | no |
 | <a name="input_mfa_configuration"></a> [mfa\_configuration](#input\_mfa\_configuration) | Multi-Factor Authentication (MFA) configuration | `string` | `"OPTIONAL"` | no |
-| <a name="input_oidc_provider_name"></a> [oidc\_provider\_name](#input\_oidc\_provider\_name) | Name for the OIDC identity provider | `string` | `"OIDC"` | no |
 | <a name="input_password_minimum_length"></a> [password\_minimum\_length](#input\_password\_minimum\_length) | Minimum length of the password policy | `number` | `8` | no |
 | <a name="input_password_require_lowercase"></a> [password\_require\_lowercase](#input\_password\_require\_lowercase) | Whether to require lowercase letters in password | `bool` | `true` | no |
 | <a name="input_password_require_numbers"></a> [password\_require\_numbers](#input\_password\_require\_numbers) | Whether to require numbers in password | `bool` | `true` | no |
@@ -179,7 +172,6 @@ No resources.
 | <a name="input_project_name"></a> [project\_name](#input\_project\_name) | Name of the project | `string` | `"arc"` | no |
 | <a name="input_read_attributes"></a> [read\_attributes](#input\_read\_attributes) | List of user pool attributes the app client can read | `list(string)` | <pre>[<br/>  "email",<br/>  "email_verified",<br/>  "name",<br/>  "family_name",<br/>  "given_name",<br/>  "preferred_username",<br/>  "picture"<br/>]</pre> | no |
 | <a name="input_refresh_token_validity"></a> [refresh\_token\_validity](#input\_refresh\_token\_validity) | Time limit, in days, after which the refresh token is no longer valid | `number` | `30` | no |
-| <a name="input_saml_provider_name"></a> [saml\_provider\_name](#input\_saml\_provider\_name) | Name for the SAML identity provider | `string` | `"SAML"` | no |
 | <a name="input_temporary_password_validity_days"></a> [temporary\_password\_validity\_days](#input\_temporary\_password\_validity\_days) | Number of days a temporary password is valid | `number` | `7` | no |
 | <a name="input_user_pool_tier"></a> [user\_pool\_tier](#input\_user\_pool\_tier) | The user pool feature plan, or tier | `string` | `"PLUS"` | no |
 | <a name="input_write_attributes"></a> [write\_attributes](#input\_write\_attributes) | List of user pool attributes the app client can write | `list(string)` | <pre>[<br/>  "email",<br/>  "name",<br/>  "family_name",<br/>  "given_name",<br/>  "preferred_username",<br/>  "picture"<br/>]</pre> | no |
@@ -188,26 +180,11 @@ No resources.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_amazon_login_url"></a> [amazon\_login\_url](#output\_amazon\_login\_url) | Direct login URL for Amazon provider |
-| <a name="output_apple_login_url"></a> [apple\_login\_url](#output\_apple\_login\_url) | Direct login URL for Apple provider |
-| <a name="output_enabled_providers"></a> [enabled\_providers](#output\_enabled\_providers) | Map of enabled identity providers and their status |
-| <a name="output_facebook_login_url"></a> [facebook\_login\_url](#output\_facebook\_login\_url) | Direct login URL for Facebook provider |
-| <a name="output_google_login_url"></a> [google\_login\_url](#output\_google\_login\_url) | Direct login URL for Google provider |
-| <a name="output_hosted_ui_domain"></a> [hosted\_ui\_domain](#output\_hosted\_ui\_domain) | The domain name for the hosted UI |
-| <a name="output_hosted_ui_url"></a> [hosted\_ui\_url](#output\_hosted\_ui\_url) | The URL of the hosted UI |
-| <a name="output_identity_provider_names"></a> [identity\_provider\_names](#output\_identity\_provider\_names) | The names of the configured identity providers |
-| <a name="output_login_url"></a> [login\_url](#output\_login\_url) | The login URL for the hosted UI |
-| <a name="output_logout_url"></a> [logout\_url](#output\_logout\_url) | The logout URL for the hosted UI |
-| <a name="output_oauth_configuration"></a> [oauth\_configuration](#output\_oauth\_configuration) | OAuth configuration details for client applications |
-| <a name="output_oidc_login_url"></a> [oidc\_login\_url](#output\_oidc\_login\_url) | Direct login URL for OIDC provider |
-| <a name="output_saml_login_url"></a> [saml\_login\_url](#output\_saml\_login\_url) | Direct login URL for SAML provider |
 | <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | The ARN of the Cognito User Pool |
 | <a name="output_user_pool_client_id"></a> [user\_pool\_client\_id](#output\_user\_pool\_client\_id) | The ID of the Cognito User Pool Client |
-| <a name="output_user_pool_client_name"></a> [user\_pool\_client\_name](#output\_user\_pool\_client\_name) | The name of the Cognito User Pool Client |
-| <a name="output_user_pool_client_secret"></a> [user\_pool\_client\_secret](#output\_user\_pool\_client\_secret) | The client secret of the Cognito User Pool Client (if generated) |
 | <a name="output_user_pool_endpoint"></a> [user\_pool\_endpoint](#output\_user\_pool\_endpoint) | The endpoint name of the Cognito User Pool |
 | <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | The ID of the Cognito User Pool |
-| <a name="output_user_pool_issuer"></a> [user\_pool\_issuer](#output\_user\_pool\_issuer) | The issuer URL for the user pool |
-| <a name="output_user_pool_jwks_uri"></a> [user\_pool\_jwks\_uri](#output\_user\_pool\_jwks\_uri) | The JSON Web Key Set (JWKS) URI for the user pool |
+| <a name="output_user_pool_issuer"></a> [user\_pool\_issuer](#output\_user\_pool\_issuer) | The issuer URL for JWT tokens |
+| <a name="output_user_pool_jwks_uri"></a> [user\_pool\_jwks\_uri](#output\_user\_pool\_jwks\_uri) | The JWKS URI for JWT token validation |
 | <a name="output_user_pool_name"></a> [user\_pool\_name](#output\_user\_pool\_name) | The name of the Cognito User Pool |
 <!-- END_TF_DOCS -->

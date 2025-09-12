@@ -62,12 +62,12 @@ locals {
         client_id                     = var.identity_providers_config.google.client_id
         client_secret                 = var.identity_providers_config.google.client_secret
         authorize_scopes              = join(" ", var.identity_providers_config.google.scopes)
-        authorize_url                 = "https://accounts.google.com/o/oauth2/v2/auth"
-        token_url                     = "https://www.googleapis.com/oauth2/v4/token"
-        attributes_url                = "https://people.googleapis.com/v1/people/me?personFields="
-        attributes_url_add_attributes = "true"
-        oidc_issuer                   = "https://accounts.google.com"
-        token_request_method          = "POST"
+        authorize_url                 = var.identity_providers_config.google.authorize_url
+        token_url                     = var.identity_providers_config.google.token_url
+        attributes_url                = var.identity_providers_config.google.attributes_url
+        attributes_url_add_attributes = var.identity_providers_config.google.attributes_url_add_attributes
+        oidc_issuer                   = var.identity_providers_config.google.oidc_issuer
+        token_request_method          = var.identity_providers_config.google.token_request_method
       }
       attribute_mapping = var.identity_providers_config.google.attribute_mapping
     }] : [],
@@ -79,11 +79,11 @@ locals {
         client_id                     = var.identity_providers_config.facebook.app_id
         client_secret                 = var.identity_providers_config.facebook.app_secret
         authorize_scopes              = join(",", var.identity_providers_config.facebook.scopes)
-        authorize_url                 = "https://www.facebook.com/v17.0/dialog/oauth"
-        token_url                     = "https://graph.facebook.com/v17.0/oauth/access_token"
-        attributes_url                = "https://graph.facebook.com/v17.0/me?fields="
-        attributes_url_add_attributes = "true"
-        token_request_method          = "GET"
+        authorize_url                 = var.identity_providers_config.google.authorize_url
+        token_url                     = var.identity_providers_config.google.token_url
+        attributes_url                = var.identity_providers_config.google.attributes_url
+        attributes_url_add_attributes = var.identity_providers_config.google.attributes_url_add_attributes
+        token_request_method          = var.identity_providers_config.google.token_request_method
       }
       attribute_mapping = var.identity_providers_config.facebook.attribute_mapping
     }] : [],

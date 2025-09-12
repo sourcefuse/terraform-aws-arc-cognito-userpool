@@ -30,23 +30,6 @@ variable "project_name" {
 # HOSTED UI CONFIGURATION
 # ==============================================================================
 
-variable "callback_urls" {
-  description = "List of allowed callback URLs for the app client"
-  type        = list(string)
-  default     = ["http://localhost:3000/callback"]
-}
-
-variable "logout_urls" {
-  description = "List of allowed logout URLs for the app client"
-  type        = list(string)
-  default     = ["http://localhost:3000/logout"]
-}
-
-variable "default_redirect_uri" {
-  description = "Default redirect URI for the app client"
-  type        = string
-  default     = "http://localhost:3000/callback"
-}
 variable "hosted_ui_config" {
   description = "Cognito Hosted UI configuration"
   type = object({
@@ -65,39 +48,6 @@ variable "hosted_ui_config" {
     image_file                           = optional(string)
   })
   default = null
-}
-
-# ==============================================================================
-# OAUTH CONFIGURATION
-# ==============================================================================
-
-variable "allowed_oauth_flows" {
-  description = "List of allowed OAuth flows"
-  type        = list(string)
-  default     = ["code", "implicit"]
-
-  validation {
-    condition = alltrue([
-      for flow in var.allowed_oauth_flows : contains(["code", "implicit", "client_credentials"], flow)
-    ])
-    error_message = "Allowed OAuth flows must be one of: code, implicit, client_credentials."
-  }
-}
-
-variable "allowed_oauth_scopes" {
-  description = "List of allowed OAuth scopes"
-  type        = list(string)
-  default     = ["email", "openid", "profile", "aws.cognito.signin.user.admin"]
-}
-
-# ==============================================================================
-# CLIENT CONFIGURATION
-# ==============================================================================
-
-variable "generate_client_secret" {
-  description = "Whether to generate a client secret"
-  type        = bool
-  default     = false
 }
 
 # ==============================================================================
