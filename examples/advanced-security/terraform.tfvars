@@ -12,8 +12,8 @@ user_pool_add_ons = {
 }
 account_takeover_risk_configuration = {
   notify_configuration = {
-    source_arn = "arn:aws:ses:us-east-1:884360309640:identity/debash.bora@sourcefuse.com"
-    from       = "debash.bora@sourcefuse.com"
+    source_arn = "arn:aws:ses:us-east-1:12345678912:identity/test@example.com"
+    from       = "test@example.com"
     block_email = {
       html_body = "<h1>Blocked</h1>"
       text_body = "Your login was blocked"
