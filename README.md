@@ -18,6 +18,9 @@
 
 [![Quality Gate](https://sonarcloud.io/api/project_badges/quality_gate?project=sourcefuse_terraform-aws-arc-cognito-userpool&token=e28bfe630069bd645a51dee7e25cf3c7e522e9fd)](https://sonarcloud.io/summary/new_code?id=sourcefuse_terraform-aws-arc-cognito-userpool)
 
+> [!TIP]
+> 🤖 **New:** Use this module with AI assistants via the [ARC IaC MCP Server](https://github.com/sourcefuse/arc-iac-mcp) — search, scaffold, and security-scan ARC modules from natural language. [Quick setup ↓](#ai-assistant-integration-arc-iac-mcp)
+
 ## Overview
 
 SourceFuse AWS Reference Architecture (ARC) Terraform module for managing the cognito userpool module.
